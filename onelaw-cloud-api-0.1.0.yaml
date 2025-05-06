@@ -1,0 +1,914 @@
+openapi: 3.0.3
+
+info:
+  title: OneLaw Cloud API
+  version: 0.1.0
+  description: >
+    OneLaw Cloud provides a RESTful interface for managing parties, clients, users, matters,
+    matter notes, and time entries for law firms.
+
+servers:
+  - url: https://integration.onepractice.net/v0.1.0
+    description: Integration / Testing
+  - url: https://api.onepractice.net/v0.1.0
+    description: Production
+
+tags:
+  - name: Parties
+    description: Entities representing individuals, organisations, or groups.
+  - name: Clients
+    description: Parties that have a client relationship with the law firm.
+  - name: Users
+    description: Staff members who use the software.
+  - name: Matters
+    description: Legal matters that the law firm works on for their clients.
+  - name: Time Entries
+    description: Billable or non-billable time recorded by users.
+  - name: Matter Notes
+    description: Free-form notes and warnings attached to matters.
+  - name: Codes
+    description: Codes used for categorisation and reporting
+
+security:
+  - OAuth2:
+      - openid
+      - profile
+      - all.read
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://devolcb2c.onmicrosoft.com/oauth2/v2.0/authorize?p=b2c_1_si
+          tokenUrl:         https://devolcb2c.onmicrosoft.com/oauth2/v2.0/token?p=b2c_1_si
+          scopes:
+            openid:         OpenID Connect ID token
+            profile:        Basic user info
+            all.read:       Read any resource
+            notes.write:    Add matter notes
+            time.write:     Add time entries
+
+  parameters:
+    partyId:
+      name: partyId
+      in: path
+      required: true
+      description: Unique identifier of a party.
+      schema:
+        type: string
+        format: uuid
+    clientId:
+      name: clientId
+      in: path
+      required: true
+      description: Unique identifier of a client.
+      schema:
+        type: string
+        format: uuid
+    userId:
+      name: userId
+      in: path
+      required: true
+      description: Unique identifier of a user.
+      schema:
+        type: string
+        format: uuid
+    matterId:
+      name: matterId
+      in: path
+      required: true
+      description: Unique identifier of a matter.
+      schema:
+        type: string
+        format: uuid
+    noteId:
+      name: noteId
+      in: path
+      required: true
+      description: Unique identifier of a matter note.
+      schema:
+        type: string
+        format: uuid
+    timeEntryId:
+      name: timeEntryId
+      in: path
+      required: true
+      description: Unique identifier of a time entry.
+      schema:
+        type: string
+        format: uuid
+
+    # ----- Common Paging Params -----
+    limit:
+      name: limit
+      in: query
+      description: Max items to return (1-200).
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 100
+
+    offset:
+      name: offset
+      in: query
+      description: Zero-based index of first item to return.
+      required: true
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+    # ----- Idempotency ------
+
+    idempotencyKey:
+      name: Idempotency-Key
+      in: header
+      description: client generated guid per request as per IETF draft.
+      style: simple
+      explode: false
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    SystemPartyType:
+      type: string
+      enum: [natural, legal, multi]
+
+    SystemAddressType:
+      type: string
+      enum: [telco, geo, email]
+
+    PartyRole:
+      type: string
+      enum: [client, user]
+
+    NoteVisibility:
+      type: string
+      enum: [public, private, team]
+
+    TelcoAddress:
+      type: object
+      required: [type, phone, phoneE164, country]
+      properties:
+        type:
+          type: string
+          description: Domain-specific label (e.g. "mobile", "work").
+        phone:
+          type: string
+          description: Phone number in local format.
+        phoneE164:
+          type: string
+          description: Phone number in international E.164 format.
+        country:
+          type: string
+          description: Country name or ISO country code.
+      additionalProperties: false
+
+    GeoAddress:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          description: Domain-specific label (e.g. "street", "postal").
+        address:
+          type: string
+          description: Full address (multi-line text).
+        country:
+          type: string
+          description: Country code
+        postcode:
+          type: string
+        street:
+          type: string
+          description: Street number and name
+        suburb:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        primaryAddressTypes: 
+          type: array
+          items:
+            $ref: '#/components/schemas/PrimaryAddressType'
+      additionalProperties: false
+
+    EmailAddress:
+      type: object
+      required: [type, email]
+      properties:
+        type:
+          type: string
+          description: Domain-specific label (e.g. "work", "personal").
+        email:
+          type: string
+          format: email
+      additionalProperties: false
+
+    Address:
+      oneOf:
+        - $ref: '#/components/schemas/TelcoAddress'
+        - $ref: '#/components/schemas/GeoAddress'
+        - $ref: '#/components/schemas/EmailAddress'
+
+    PrimaryAddressType:
+      type: object
+
+    PartyType:
+      type: object
+      properties:
+        name:
+          type: string
+        systemType:
+          $ref: '#/components/schemas/SystemPartyType'
+
+    Party:
+      type: object
+      required: [fileAsName, type, roles]
+      properties:
+        id:
+          type: string
+          format: uuid
+        fileAsName:
+          type: string
+        type:
+          $ref: '#/components/schemas/PartyType'
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartyRole'
+        clientId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The client id of the party if the party is a client.
+        telephoneNumbers:
+          type: array
+          items:
+            $ref: '#/components/schemas/TelcoAddress'
+        emailAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailAddress'
+        geographicAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoAddress'
+        createdDateTime:
+          type: string
+          format: date-time
+        lastUpdatedDateTime:
+          type: string
+          format: date-time
+      additionalProperties: false
+
+    Person:
+      allOf:
+        - $ref: '#/components/schemas/Party'
+        - type: object
+          properties:
+            personName:
+              $ref: '#/components/schemas/PersonName'
+            employer:
+              type: string
+
+    LegalEntity:
+      allOf:
+        - $ref: '#/components/schemas/Party'
+        - type: object
+
+    MultiParty:
+      allOf:
+        - $ref: '#/components/schemas/Party'
+        - type: object
+          properties:
+            members: 
+              type: array
+              items:
+                $ref: '#/components/schemas/Party'
+
+    PersonName:
+      type: object
+      properties:
+        title: 
+          type: string
+        first:
+          type: string
+        middle:
+          type: string
+        last:
+          type: string
+        suffix:
+          type: string
+        knownAs:
+          type: string
+
+    Client:
+      type: object
+      properties:
+        clientNumber:
+          type: string
+          description: Firm-specific client reference.
+        matters: 
+          type: array
+          items:
+            $ref: '#/components/schemas/Matter'
+        party:
+          $ref: '#/components/schemas/Party'
+
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+        party:
+          $ref: '#/components/schemas/Party'
+
+    Matter:
+      type: object
+      required: [id, clientId, title, status, openedDate]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The backend ID for the matter.
+        number:
+          type: integer
+          description: The user-visible number used to refer to the matter.
+        description:
+          type: string
+        createdDate:
+          type: string
+          format: date
+        archivedDate:
+          type: string
+          format: date
+        notes:
+          type: array
+          items: 
+            $ref: '#/components/schemas/MatterNote'
+
+    MatterNoteCreate:
+      type: object
+      required: [note, visibility, warning]
+      properties:
+        note:
+          type: string
+          description: Free-form note text.
+        warning:
+          type: boolean
+          description: If true, displays a prominent warning to users.
+        visibility:
+          $ref: '#/components/schemas/NoteVisibility'
+
+    MatterNote:
+      allOf:
+      - $ref: '#/components/schemas/MatterNoteCreate'
+      - type: object
+        required: [id, note, visibility, warning, createdDateTime, lastUpdatedDateTime]
+        properties:
+          id:
+            type: string
+            format: uuid
+          createdDateTime:
+            type: string
+            format: date-time
+          lastUpdatedDateTime:
+            type: string
+            format: date-time
+
+    TimeEntryCreate:
+      type: object
+      required: [userId, authorId, matterId, start, duration, wipCode, rateCode, subFeeTypeId]
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: The id of the user recording the time, possibly different from who the time is recorded for.
+        authorId:
+          type: string
+          format: uuid
+          description: The id of the user who the time is recorded for.
+        matterId:
+          type: string
+          format: uuid
+          description: The id of the matter the time should be billed to.
+        start:
+          type: string
+          format: date-time
+          description: The start date and time of the time entry, time is recorded in 6 minute intervals so the minutes component must be mod 6.
+        duration:
+          type: integer
+          minimum: 6
+          multipleOf: 6
+          description: Duration of the time entry in minutes and always a multiple of 6.
+        wipCode:
+          type: string
+          description: The code for a low level categorization of the work performed, loaded from wipcodes path.
+        note:
+          type: string
+        rateCode:
+          type: string
+          description: The code of the rate used to bill this time
+        judgedValue:
+          type: number
+          format: double
+          description: Override the billable value of the time.
+        judgedValueCode:
+          type: string
+          description: Provide a reason why you're using a judged value to override the billable value.
+        subFeeTypeId:
+          type: string
+          format: uuid
+          description: high level categorization of the work performed, should default to the sub fee type of the matter.
+
+    TimeEntry:
+      allOf:
+        - $ref: '#/components/schemas/TimeEntryCreate'
+        - type: object
+          required: [id, userId, authorId, matterId, start, duration, wipCode, rateCode, subFeeTypeId]
+          properties:
+            id:
+              type: string
+              format: uuid
+
+    WipCode:
+      type: object
+      properties:
+        code:
+          type: string
+        description:
+          type: string
+        narration:
+          type: string
+        chargeable:
+          type: boolean
+        active:
+          type: boolean
+
+    RateType:
+      type: object
+      properties:
+        code:
+          type: string
+        default:
+          type: boolean
+          description: true if this is the default rate used for billing time.
+        description:
+          type: string
+        active:
+          type: boolean
+
+    JudgedValueReason:
+      type: object
+      properties:
+        code:
+          type: string
+        description:
+          type: string
+
+    FeeType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        subFeeTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubFeeType'
+
+    SubFeeType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+
+  responses:
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authentication required or has failed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Request validation failed, see body for details
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+paths:
+
+  # Fee Types & Sub Fee Types
+  /fee-types:
+    get:
+      operationId: getFeeTypes
+      summary: Get fee types and sub fee types required to record time.
+      tags: [Codes]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FeeType'
+                  total:
+                    type: integer
+
+  # Judged Value Reasons
+  /judged-value-codes:
+    get:
+      operationId: getJudgedValueCodes
+      summary: Codes used for reasons why some time entries are recorded with a judged value.
+      tags: [Codes]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/JudgedValueReason'
+                  total:
+                    type: integer
+
+  # WIP Codes
+  /wip-codes:
+    get:
+      operationId: getWipCodes
+      summary: Codes used for detailed categorisation of work performed in a time entry.
+      tags: [Codes]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WipCode'
+                  total:
+                    type: integer
+
+  # Rate Types
+  /rate-types:
+    get:
+      operationId: getRateTypes
+      summary: Billing rates which determine the cost of time when billed.
+      tags: [Codes]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RateType'
+                  total:
+                    type: integer
+
+  # Parties
+  /parties:
+    get:
+      operationId: getParties
+      summary: List parties (people, companies, etc) that the law firm interacts with.
+      tags: [Parties]
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Party'
+                  total:
+                    type: integer
+
+  /parties/{partyId}:
+    parameters:
+      - $ref: '#/components/parameters/partyId'
+    get:
+      operationId: getParty
+      summary: Get a party by ID
+      tags: [Parties]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Party'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Clients
+  /clients:
+    get:
+      operationId: getClients
+      summary: Get the subset of Parties that are also customers of the law firm.
+      description: Parties that have the Client role.
+      tags: [Clients]
+      parameters:
+        - name: updatedAfterDateTime
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: deactivatedAfterDateTime
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Client'
+                  total:
+                    type: integer
+
+  /clients/{clientId}:
+    parameters:
+      - $ref: '#/components/parameters/clientId'
+    get:
+      operationId: getClient
+      summary: Get a client by ID
+      tags: [Clients]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /clients/{clientId}/matters:
+    parameters:
+      - $ref: '#/components/parameters/clientId'
+    get:
+      operationId: getMattersByClient
+      summary: List matters for a client
+      tags: [Matters]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Matter'
+                  total:
+                    type: integer
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /matters/{matterId}:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
+    get:
+      operationId: getMatter
+      summary: Get a matter by ID
+      tags: [Matters]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Matter'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Matter Notes
+  /matters/{matterId}/notes:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
+    get:
+      operationId: getMatterNotes
+      summary: List notes for a matter
+      tags: [Matter Notes]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MatterNote'
+                  total:
+                    type: integer
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      security:
+      - OAuth2: [openid, profile, all.read, notes.write]
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      summary: Create a note for a matter
+      tags: [Matter Notes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatterNoteCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatterNote'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /matters/{matterId}/notes/{noteId}:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
+      - $ref: '#/components/parameters/noteId'
+    get:
+      operationId: getMatterNote
+      summary: Get a note by ID
+      tags: [Matter Notes]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatterNote'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Users
+  /users:
+    get:
+      operationId: getUsers
+      summary: Get all users
+      tags: [Users]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  total:
+                    type: integer
+
+  /users/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/userId'
+    get:
+      operationId: getUser
+      summary: Get a user by ID
+      tags: [Users]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /matters/{matterId}/time-entries:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
+    get:
+      operationId: getTimeByMatter
+      summary: List time entries for a matter
+      tags: [Time Entries]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TimeEntry'
+                  total:
+                    type: integer
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      security:
+      - OAuth2: [openid, profile, all.read, time.write]
+      operationId: saveTimeToMatter
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      summary: Add a time entry to a matter
+      tags: [Time Entries]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntry'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
