@@ -2,38 +2,37 @@ openapi: 3.0.3
 
 info:
   title: OneLaw Cloud API
-  version: 0.1.0
+  version: 0.2.0
+  license: 
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+      
   description: >
-    OneLaw Cloud provides a RESTful interface for managing parties, clients, users, matters,
-    matter notes, and time entries for law firms.
+    OneLaw Cloud provides a RESTful interface for managing parties, clients, matters, and time entries for law firms.
 
 servers:
-  - url: https://integration.onepractice.net/v0.1.0
+  - url: https://integration.onepractice.net/v1
     description: Integration / Testing
-  - url: https://api.onepractice.net/v0.1.0
+  - url: https://api.onepractice.net/v1
     description: Production
 
 tags:
   - name: Parties
-    description: Entities representing individuals, organisations, or groups.
+    description: All individuals, organisations, or groups (e.g. trusts) involved in legal matters.
   - name: Clients
     description: Parties that have a client relationship with the law firm.
-  - name: Users
-    description: Staff members who use the software.
   - name: Matters
     description: Legal matters that the law firm works on for their clients.
   - name: Time Entries
     description: Billable or non-billable time recorded by users.
-  - name: Matter Notes
-    description: Free-form notes and warnings attached to matters.
+  - name: Users
+    description: Staff members who use the software.
   - name: Codes
     description: Codes used for categorisation and reporting
 
 security:
   - OAuth2:
-      - openid
-      - profile
-      - all.read
+      - access_as_user
 
 components:
   securitySchemes:
@@ -41,14 +40,13 @@ components:
       type: oauth2
       flows:
         authorizationCode:
-          authorizationUrl: https://devolcb2c.onmicrosoft.com/oauth2/v2.0/authorize?p=b2c_1_si
-          tokenUrl:         https://devolcb2c.onmicrosoft.com/oauth2/v2.0/token?p=b2c_1_si
+          authorizationUrl: https://devolcb2c.b2clogin.com/devolcb2c.onmicrosoft.com/oauth2/v2.0/authorize?p=b2c_1_si
+          tokenUrl:         https://devolcb2c.b2clogin.com/devolcb2c.onmicrosoft.com/oauth2/v2.0/token?p=b2c_1_si
           scopes:
             openid:         OpenID Connect ID token
             profile:        Basic user info
-            all.read:       Read any resource
-            notes.write:    Add matter notes
-            time.write:     Add time entries
+            access_as_user: Access resources impersonating user
+            offline_access: Refresh tokens
 
   parameters:
     partyId:
@@ -83,14 +81,6 @@ components:
       schema:
         type: string
         format: uuid
-    noteId:
-      name: noteId
-      in: path
-      required: true
-      description: Unique identifier of a matter note.
-      schema:
-        type: string
-        format: uuid
     timeEntryId:
       name: timeEntryId
       in: path
@@ -99,49 +89,67 @@ components:
       schema:
         type: string
         format: uuid
+    nonClientTimeEntryId:
+      name: nonClientTimeEntryId
+      in: path
+      required: true
+      description: Unique identifier of a non-client time entry.
+      schema:
+        type: string
+        format: uuid
+    noteId:
+      name: noteId
+      in: path
+      required: true
+      description: Unique identifier of a note.
+      schema:
+        type: string
+        format: uuid
 
-    # ----- Common Paging Params -----
+    #
+    # Common Paging Params
+    #
+
     limit:
       name: limit
       in: query
-      description: Max items to return (1-200).
-      required: true
+      description: Max items to return (1-100).
+      required: false
       schema:
         type: integer
         minimum: 1
-        maximum: 200
-        default: 100
+        default: 50
+        maximum: 100
 
     offset:
       name: offset
       in: query
       description: Zero-based index of first item to return.
-      required: true
+      required: false
       schema:
         type: integer
-        minimum: 0
         default: 0
 
-    # ----- Idempotency ------
+    #
+    # Idempotency
+    #
 
     idempotencyKey:
       name: Idempotency-Key
       in: header
-      description: client generated guid per request as per IETF draft.
-      style: simple
-      explode: false
+      description: >
+        Idempotency-Key request header as defined in draft-ietf-httpapi-idempotency-key-header-06.
+        Send a value (typically a UUID v4) that is **unique to this semantic request**.  When the same key is reused with an
+        identical payload, the server MUST return the original response instead of performing the action again.
+      required: false
       schema:
         type: string
-        format: uuid
+        example: 'c7b5e4fb-3f05-4d84-8a4a-08f3d9b9ca2e'
 
   schemas:
     SystemPartyType:
       type: string
       enum: [natural, legal, multi]
-
-    SystemAddressType:
-      type: string
-      enum: [telco, geo, email]
 
     PartyRole:
       type: string
@@ -193,10 +201,6 @@ components:
           type: string
         state:
           type: string
-        primaryAddressTypes: 
-          type: array
-          items:
-            $ref: '#/components/schemas/PrimaryAddressType'
       additionalProperties: false
 
     EmailAddress:
@@ -211,15 +215,6 @@ components:
           format: email
       additionalProperties: false
 
-    Address:
-      oneOf:
-        - $ref: '#/components/schemas/TelcoAddress'
-        - $ref: '#/components/schemas/GeoAddress'
-        - $ref: '#/components/schemas/EmailAddress'
-
-    PrimaryAddressType:
-      type: object
-
     PartyType:
       type: object
       properties:
@@ -227,15 +222,16 @@ components:
           type: string
         systemType:
           $ref: '#/components/schemas/SystemPartyType'
+          required: true
 
     Party:
       type: object
-      required: [fileAsName, type, roles]
+      required: [ name, type, roles ]
       properties:
         id:
           type: string
           format: uuid
-        fileAsName:
+        name:
           type: string
         type:
           $ref: '#/components/schemas/PartyType'
@@ -260,12 +256,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GeoAddress'
-        createdDateTime:
+        created:
           type: string
           format: date-time
-        lastUpdatedDateTime:
+          readOnly: true
+        lastUpdated:
           type: string
           format: date-time
+          readOnly: true
       additionalProperties: false
 
     Person:
@@ -338,23 +336,30 @@ components:
           type: string
           format: uuid
           description: The backend ID for the matter.
+          readOnly: true
         number:
           type: integer
           description: The user-visible number used to refer to the matter.
+          readOnly: true
         description:
           type: string
         createdDate:
           type: string
           format: date
+          readOnly: true
         archivedDate:
           type: string
           format: date
+          readOnly: true
+        subFeeTypeId:
+          type: string
+          format: uuid
         notes:
           type: array
           items: 
-            $ref: '#/components/schemas/MatterNote'
+            $ref: '#/components/schemas/Note'
 
-    MatterNoteCreate:
+    NoteCreate:
       type: object
       required: [note, visibility, warning]
       properties:
@@ -367,19 +372,19 @@ components:
         visibility:
           $ref: '#/components/schemas/NoteVisibility'
 
-    MatterNote:
+    Note:
       allOf:
-      - $ref: '#/components/schemas/MatterNoteCreate'
+      - $ref: '#/components/schemas/NoteCreate'
       - type: object
-        required: [id, note, visibility, warning, createdDateTime, lastUpdatedDateTime]
+        required: [id, note, visibility, warning, created, lastUpdated]
         properties:
           id:
             type: string
             format: uuid
-          createdDateTime:
+          created:
             type: string
             format: date-time
-          lastUpdatedDateTime:
+          lastUpdated:
             type: string
             format: date-time
 
@@ -420,7 +425,7 @@ components:
           type: number
           format: double
           description: Override the billable value of the time.
-        judgedValueCode:
+        judgedValueReasonCode:
           type: string
           description: Provide a reason why you're using a judged value to override the billable value.
         subFeeTypeId:
@@ -433,6 +438,43 @@ components:
         - $ref: '#/components/schemas/TimeEntryCreate'
         - type: object
           required: [id, userId, authorId, matterId, start, duration, wipCode, rateCode, subFeeTypeId]
+          properties:
+            id:
+              type: string
+              format: uuid
+
+    NonClientTimeEntryCreate:
+      type: object
+      required: [ userId, authorId, start, duration, wipCode ]
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: The id of the user recording the time, possibly different from who the time is recorded for.
+        authorId:
+          type: string
+          format: uuid
+          description: The id of the user who the time is recorded for.
+        start:
+          type: string
+          format: date-time
+          description: The start date and time of the time entry, time is recorded in 6 minute intervals so the minutes component must be mod 6.
+        duration:
+          type: integer
+          minimum: 6
+          multipleOf: 6
+          description: Duration of the time entry in minutes and always a multiple of 6.
+        wipCode:
+          type: string
+          description: The code for a low level categorization of the work performed, loaded from wipcodes path.
+        note:
+          type: string
+
+    NonClientTimeEntry:
+      allOf:
+        - $ref: '#/components/schemas/NonClientTimeEntryCreate'
+        - type: object
+          required: [id, userId, authorId, matterId, start, duration, wipCode ]
           properties:
             id:
               type: string
@@ -504,16 +546,9 @@ components:
         message:
           type: string
 
-
   responses:
     NotFound:
       description: Resource not found.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    Unauthorized:
-      description: Authentication required or has failed.
       content:
         application/json:
           schema:
@@ -527,11 +562,15 @@ components:
 
 paths:
 
+  #
   # Fee Types & Sub Fee Types
+  #
+
   /fee-types:
     get:
       operationId: getFeeTypes
-      summary: Get fee types and sub fee types required to record time.
+      summary: Get all fee types
+      description: Used to categorize areas of legal practice in matters and time recorded.
       tags: [Codes]
       responses:
         '200':
@@ -547,12 +586,18 @@ paths:
                       $ref: '#/components/schemas/FeeType'
                   total:
                     type: integer
+        '400':
+          description: Bad request.
 
+  #
   # Judged Value Reasons
-  /judged-value-codes:
+  #
+
+  /judged-value-reasons:
     get:
-      operationId: getJudgedValueCodes
-      summary: Codes used for reasons why some time entries are recorded with a judged value.
+      operationId: getJudgedValueReasons
+      summary: Get all judged value reason codes
+      description: Reasons why some time entries are recorded with a judged value.
       tags: [Codes]
       responses:
         '200':
@@ -568,12 +613,15 @@ paths:
                       $ref: '#/components/schemas/JudgedValueReason'
                   total:
                     type: integer
-
+        '400':
+          description: Bad request.
+            
   # WIP Codes
   /wip-codes:
     get:
       operationId: getWipCodes
-      summary: Codes used for detailed categorisation of work performed in a time entry.
+      summary: Get all WIP codes
+      description: Used for detailed categorisation of work performed in a time entry.
       tags: [Codes]
       responses:
         '200':
@@ -589,12 +637,18 @@ paths:
                       $ref: '#/components/schemas/WipCode'
                   total:
                     type: integer
+        '400':
+          description: Bad request.
 
+  #
   # Rate Types
+  #
+
   /rate-types:
     get:
       operationId: getRateTypes
-      summary: Billing rates which determine the cost of time when billed.
+      summary: Get all billing rates
+      description: Rates determine the cost of time when billed.
       tags: [Codes]
       responses:
         '200':
@@ -610,18 +664,25 @@ paths:
                       $ref: '#/components/schemas/RateType'
                   total:
                     type: integer
+        '400':
+          description: Bad request.
 
+  #
   # Parties
+  #
+
   /parties:
     get:
       operationId: getParties
-      summary: List parties (people, companies, etc) that the law firm interacts with.
+      summary: Get all parties
+      description: Parties are all the people and legal entitites involved in legal matters.
       tags: [Parties]
       parameters:
-        - name: search
+        - name: updatedAfter
           in: query
           schema:
             type: string
+            format: date-time
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
       responses:
@@ -638,7 +699,9 @@ paths:
                       $ref: '#/components/schemas/Party'
                   total:
                     type: integer
-
+        '400':
+          description: Bad request.
+            
   /parties/{partyId}:
     parameters:
       - $ref: '#/components/parameters/partyId'
@@ -656,20 +719,107 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  #
+  # Party Notes
+  #
+
+  /parties/{partyId}/notes:
+    get:
+      operationId: getPartyNotes
+      summary: Get all notes on a party
+      description: Text note recorded against a party, can also have a warning flag.
+      parameters:
+        - $ref: '#/components/parameters/partyId'
+      tags: [Parties]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Note'
+                  total:
+                    type: integer
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      operationId: savePartyNote
+      summary: Create a note on a party
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+        required: true
+      - $ref: '#/components/parameters/partyId'
+      tags: [Parties]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /parties/{partyId}/notes/{noteId}:
+    put:
+      operationId: updatePartyNote
+      summary: Update an existing party note
+      parameters:
+      - $ref: '#/components/parameters/partyId'
+      - $ref: '#/components/parameters/noteId'
+      tags: 
+      -  Parties
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+      responses: 
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
   # Clients
+  #
+
   /clients:
     get:
+      summary: Get all clients
       operationId: getClients
-      summary: Get the subset of Parties that are also customers of the law firm.
-      description: Parties that have the Client role.
+      description: Parties that have the Client role and therefore also matters with the law firm.
       tags: [Clients]
       parameters:
-        - name: updatedAfterDateTime
+        - name: updatedAfter
           in: query
           schema:
             type: string
             format: date-time
-        - name: deactivatedAfterDateTime
+        - name: deactivatedAfter
           in: query
           schema:
             type: string
@@ -690,7 +840,9 @@ paths:
                       $ref: '#/components/schemas/Client'
                   total:
                     type: integer
-
+        '400':
+          description: Bad request.
+            
   /clients/{clientId}:
     parameters:
       - $ref: '#/components/parameters/clientId'
@@ -708,12 +860,16 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  #
+  # Matters
+  #
+
   /clients/{clientId}/matters:
     parameters:
       - $ref: '#/components/parameters/clientId'
     get:
       operationId: getMattersByClient
-      summary: List matters for a client
+      summary: Get all matters for a client
       tags: [Matters]
       responses:
         '200':
@@ -749,14 +905,13 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # Matter Notes
   /matters/{matterId}/notes:
     parameters:
       - $ref: '#/components/parameters/matterId'
     get:
       operationId: getMatterNotes
-      summary: List notes for a matter
-      tags: [Matter Notes]
+      summary: Get all notes for a matter
+      tags: [Matters]
       responses:
         '200':
           description: Successful response.
@@ -768,24 +923,24 @@ paths:
                   items:
                     type: array
                     items:
-                      $ref: '#/components/schemas/MatterNote'
+                      $ref: '#/components/schemas/Note'
                   total:
                     type: integer
         '404':
           $ref: '#/components/responses/NotFound'
     post:
-      security:
-      - OAuth2: [openid, profile, all.read, notes.write]
+      operationId: saveMatterNote
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
+        required: true
       summary: Create a note for a matter
-      tags: [Matter Notes]
+      tags: [Matters]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MatterNoteCreate'
+              $ref: '#/components/schemas/NoteCreate'
       responses:
         '201':
           description: Created
@@ -797,7 +952,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MatterNote'
+                $ref: '#/components/schemas/Note'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -810,18 +965,42 @@ paths:
     get:
       operationId: getMatterNote
       summary: Get a note by ID
-      tags: [Matter Notes]
+      tags:
+      - Matters
       responses:
         '200':
           description: Successful response.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MatterNote'
+                $ref: '#/components/schemas/Note'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      operationId: updateMatterNote
+      summary: Update an existing note
+      tags: 
+      -  Matters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteCreate'
+      responses: 
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
         '404':
           $ref: '#/components/responses/NotFound'
 
+  #        
   # Users
+  #
+
   /users:
     get:
       operationId: getUsers
@@ -841,7 +1020,9 @@ paths:
                       $ref: '#/components/schemas/User'
                   total:
                     type: integer
-
+        '400':
+          description: Bad request.
+            
   /users/{userId}:
     parameters:
       - $ref: '#/components/parameters/userId'
@@ -859,12 +1040,95 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  #
+  # Non-client Time (recorded against a user)
+  #
+
+  /users/{userId}/non-client-time-entries:
+    parameters:
+      - $ref: '#/components/parameters/userId'
+    get:
+      operationId: getNonClientTimeByUser
+      summary: Get all non-client time for a user
+      description: Time spent on non-client parties, so not immediately billable.
+      tags: [Time Entries]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NonClientTimeEntry'
+                  total:
+                    type: integer
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      operationId: saveNonClientTimeByUser
+      summary: Save non-client time for a user
+      description: Time spent on non-client parties, so not immediately billable.
+      tags: [Time Entries]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NonClientTimeEntryCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonClientTimeEntry'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{userId}/non-client-time-entries/{nonClientTimeEntryId}:
+    parameters:
+      - $ref: '#/components/parameters/userId'
+      - $ref: '#/components/parameters/nonClientTimeEntryId'
+    put:
+      operationId: updateNonClientTime
+      summary: Update non-client time for a user
+      tags: [Time Entries]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NonClientTimeEntryCreate'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonClientTimeEntry'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # Time Recording
+  #
+
   /matters/{matterId}/time-entries:
     parameters:
       - $ref: '#/components/parameters/matterId'
     get:
       operationId: getTimeByMatter
-      summary: List time entries for a matter
+      summary: Get all time entries for a matter
+      description: Regular time entries recorded on matters that will be billed.
       tags: [Time Entries]
       responses:
         '200':
@@ -883,11 +1147,10 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
     post:
-      security:
-      - OAuth2: [openid, profile, all.read, time.write]
       operationId: saveTimeToMatter
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
+        required: true
       summary: Add a time entry to a matter
       tags: [Time Entries]
       requestBody:
@@ -910,5 +1173,30 @@ paths:
                 $ref: '#/components/schemas/TimeEntry'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /matters/{matterId}/time-entries/{timeEntryId}:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
+      - $ref: '#/components/parameters/timeEntryId'
+    put:
+      operationId: updateMatterTime
+      summary: Update an existing time entry
+      tags: 
+      -  Time Entries
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryCreate'
+      responses: 
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntry'
         '404':
           $ref: '#/components/responses/NotFound'
