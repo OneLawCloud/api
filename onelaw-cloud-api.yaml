@@ -175,6 +175,11 @@ components:
         country:
           type: string
           description: Country name or ISO country code.
+        primaryUses:
+          type: array
+          items: 
+            type: string
+          description: The uses for which this is the primary number.
       additionalProperties: false
 
     GeoAddress:
@@ -201,6 +206,11 @@ components:
           type: string
         state:
           type: string
+        primaryUses:
+          type: array
+          items: 
+            type: string
+          description: The uses for which this is the primary number.
       additionalProperties: false
 
     EmailAddress:
@@ -213,6 +223,11 @@ components:
         email:
           type: string
           format: email
+        primaryUses:
+          type: array
+          items: 
+            type: string
+          description: The uses for which this is the primary number.
       additionalProperties: false
 
     PartyType:
@@ -222,7 +237,6 @@ components:
           type: string
         systemType:
           $ref: '#/components/schemas/SystemPartyType'
-          required: true
 
     Party:
       type: object
@@ -260,10 +274,12 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         lastUpdated:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       additionalProperties: false
 
     Person:
@@ -515,6 +531,46 @@ components:
         description:
           type: string
 
+    PartyPagedResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Party'
+        total:
+          type: integer
+
+    ClientPagedResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Client'
+        total:
+          type: integer
+
+    NonClientTimeEntryPagedResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/NonClientTimeEntry'
+        total:
+          type: integer
+
+    TimeEntryPagedResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeEntry'
+        total:
+          type: integer
+
     FeeType:
       type: object
       properties:
@@ -578,14 +634,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/FeeType'
-                  total:
-                    type: integer
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeeType'
         '400':
           description: Bad request.
 
@@ -605,14 +656,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/JudgedValueReason'
-                  total:
-                    type: integer
+                type: array
+                items:
+                  $ref: '#/components/schemas/JudgedValueReason'
         '400':
           description: Bad request.
             
@@ -629,14 +675,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/WipCode'
-                  total:
-                    type: integer
+                type: array
+                items:
+                  $ref: '#/components/schemas/WipCode'
         '400':
           description: Bad request.
 
@@ -656,14 +697,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/RateType'
-                  total:
-                    type: integer
+                type: array
+                items:
+                  $ref: '#/components/schemas/RateType'
         '400':
           description: Bad request.
 
@@ -691,14 +727,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Party'
-                  total:
-                    type: integer
+                $ref: '#/components/schemas/PartyPagedResponse'
         '400':
           description: Bad request.
             
@@ -737,14 +766,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Note'
-                  total:
-                    type: integer
+                type: array
+                items:
+                  $ref: '#/components/schemas/Note'
         '404':
           $ref: '#/components/responses/NotFound'
     post:
@@ -792,7 +816,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Note'
+              $ref: '#/components/schemas/NoteCreate'
       responses: 
         '200':
           description: Successful response.
@@ -832,14 +856,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Client'
-                  total:
-                    type: integer
+                $ref: '#/components/schemas/ClientPagedResponse'
         '400':
           description: Bad request.
             
@@ -877,14 +894,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Matter'
-                  total:
-                    type: integer
+                type: array
+                items:
+                  $ref: '#/components/schemas/Matter'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -918,14 +930,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Note'
-                  total:
-                    type: integer
+                type: array
+                items:
+                  $ref: '#/components/schemas/Note'
         '404':
           $ref: '#/components/responses/NotFound'
     post:
@@ -1012,14 +1019,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/User'
-                  total:
-                    type: integer
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
         '400':
           description: Bad request.
             
@@ -1052,20 +1054,16 @@ paths:
       summary: Get all non-client time for a user
       description: Time spent on non-client parties, so not immediately billable.
       tags: [Time Entries]
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
       responses:
         '200':
           description: Successful response.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/NonClientTimeEntry'
-                  total:
-                    type: integer
+                $ref: '#/components/schemas/NonClientTimeEntryPagedResponse'
         '404':
           $ref: '#/components/responses/NotFound'
     post:
@@ -1130,20 +1128,16 @@ paths:
       summary: Get all time entries for a matter
       description: Regular time entries recorded on matters that will be billed.
       tags: [Time Entries]
+      parameters: 
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
       responses:
         '200':
           description: Successful response.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/TimeEntry'
-                  total:
-                    type: integer
+                $ref: '#/components/schemas/TimeEntryPagedResponse'
         '404':
           $ref: '#/components/responses/NotFound'
     post:
@@ -1183,8 +1177,7 @@ paths:
     put:
       operationId: updateMatterTime
       summary: Update an existing time entry
-      tags: 
-      -  Time Entries
+      tags: [ Time Entries ]
       requestBody:
         required: true
         content:
