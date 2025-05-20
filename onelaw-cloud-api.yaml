@@ -2,7 +2,7 @@ openapi: 3.0.3
 
 info:
   title: OneLaw Cloud API
-  version: 0.2.0
+  version: 0.3.0
   license: 
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -46,8 +46,8 @@ components:
       type: oauth2
       flows:
         authorizationCode:
-          authorizationUrl: https://devolcb2c.b2clogin.com/devolcb2c.onmicrosoft.com/oauth2/v2.0/authorize?p=b2c_1_si
-          tokenUrl:         https://devolcb2c.b2clogin.com/devolcb2c.onmicrosoft.com/oauth2/v2.0/token?p=b2c_1_si
+          authorizationUrl: https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/oauth2/v2.0/authorize?p=b2c_1_si
+          tokenUrl:         https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/oauth2/v2.0/token?p=b2c_1_si
           scopes:
             openid:         OpenID Connect ID token
             profile:        Basic user info
@@ -408,14 +408,10 @@ components:
             type: string
             format: date-time
 
-    TimeEntryCreate:
+    TimeEntryBase:
       type: object
-      required: [ matterId, start, duration, wipCode, rateCode, subFeeTypeId ]
+      required: [ start, duration, wipCodeId, subFeeTypeId ]
       properties:
-        matterId:
-          type: string
-          format: uuid
-          description: The id of the matter the time should be billed to.
         start:
           type: string
           format: date-time
@@ -425,43 +421,48 @@ components:
           minimum: 6
           multipleOf: 6
           description: Duration of the time entry in minutes and always a multiple of 6.
-        wipCode:
+        wipCodeId:
           type: string
-          description: The code for a low level categorization of the work performed, loaded from wipcodes path.
+          format: uuid
+          description: The ID for a low level categorization of the work performed, loaded from wipcodes path.
         note:
           type: string
-        rateCode:
-          type: string
-          description: The code of the rate used to bill this time
         subFeeTypeId:
           type: string
           format: uuid
           description: high level categorization of the work performed, should default to the sub fee type of the matter.
-
+        
+    TimeEntryCreate:
+      allOf:
+        - $ref: '#/components/schemas/TimeEntryBase'
+        - type: object
+          required: [start, duration, wipCodeId, timeRateId, subFeeTypeId]
+          properties:
+            timeRateId:
+              type: string
+              format: uuid
+              description: The ID of the rate used to bill this time
+    
     TimeEntry:
       allOf:
-        - $ref: '#/components/schemas/TimeEntryCreate'
+        - $ref: '#/components/schemas/TimeEntryBase'
         - type: object
-          required: [id, userId, authorId, matterId, start, duration, wipCode, rateCode, subFeeTypeId]
+          required: [id, authorId, matterId, start, duration, wipCodeId, subFeeTypeId]
           properties:
             id:
               type: string
               format: uuid
-            userId:
+            matterId:
               type: string
               format: uuid
-              description: The id of the user recording the time, possibly different from who the time is recorded for.
+              description: The id of the matter the time should be billed to.
             authorId:
               type: string
               format: uuid
               description: The id of the user who the time is recorded for.
-            judgedValue:
-              type: number
-              format: double
-              description: Override the billable value of the time.
-            judgedValueReasonCode:
-              type: string
-              description: Provide a reason why you're using a judged value to override the billable value.
+            judged:
+              type: boolean
+              description: Whether or not the value of the time entry was judged.
                   
     NonClientTimeEntryCreate:
       type: object
@@ -503,6 +504,9 @@ components:
     WipCode:
       type: object
       properties:
+        id:
+          type: string
+          format: uuid
         code:
           type: string
         description:
@@ -517,6 +521,9 @@ components:
     RateType:
       type: object
       properties:
+        id:
+          type: string
+          format: uuid
         code:
           type: string
         default:
@@ -530,6 +537,9 @@ components:
     JudgedValueReason:
       type: object
       properties:
+        id:
+          type: string
+          format: uuid
         code:
           type: string
         description:
