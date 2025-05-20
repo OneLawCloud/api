@@ -19,12 +19,18 @@ servers:
 tags:
   - name: Parties
     description: All individuals, organisations, or groups (e.g. trusts) involved in legal matters.
+  - name: Party Notes
+    description: Text notes on Parties
   - name: Clients
     description: Parties that have a client relationship with the law firm.
   - name: Matters
     description: Legal matters that the law firm works on for their clients.
+  - name: Matter Notes
+    description: Text notes on Matters
   - name: Time Entries
-    description: Billable or non-billable time recorded by users.
+    description: Billable or time recorded against legal matters by users
+  - name: Non-Client Time Entries
+    description: Non-billable time recorded against users.
   - name: Users
     description: Staff members who use the software.
   - name: Codes
@@ -258,6 +264,11 @@ components:
           format: uuid
           nullable: true
           description: The client id of the party if the party is a client.
+        userId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The user id of the party if the party is a user.
         telephoneNumbers:
           type: array
           items:
@@ -363,17 +374,10 @@ components:
           type: string
           format: date
           readOnly: true
-        archivedDate:
-          type: string
-          format: date
-          readOnly: true
+          nullable: true
         subFeeTypeId:
           type: string
           format: uuid
-        notes:
-          type: array
-          items: 
-            $ref: '#/components/schemas/Note'
 
     NoteCreate:
       type: object
@@ -406,16 +410,8 @@ components:
 
     TimeEntryCreate:
       type: object
-      required: [userId, authorId, matterId, start, duration, wipCode, rateCode, subFeeTypeId]
+      required: [ matterId, start, duration, wipCode, rateCode, subFeeTypeId ]
       properties:
-        userId:
-          type: string
-          format: uuid
-          description: The id of the user recording the time, possibly different from who the time is recorded for.
-        authorId:
-          type: string
-          format: uuid
-          description: The id of the user who the time is recorded for.
         matterId:
           type: string
           format: uuid
@@ -437,13 +433,6 @@ components:
         rateCode:
           type: string
           description: The code of the rate used to bill this time
-        judgedValue:
-          type: number
-          format: double
-          description: Override the billable value of the time.
-        judgedValueReasonCode:
-          type: string
-          description: Provide a reason why you're using a judged value to override the billable value.
         subFeeTypeId:
           type: string
           format: uuid
@@ -458,19 +447,26 @@ components:
             id:
               type: string
               format: uuid
-
+            userId:
+              type: string
+              format: uuid
+              description: The id of the user recording the time, possibly different from who the time is recorded for.
+            authorId:
+              type: string
+              format: uuid
+              description: The id of the user who the time is recorded for.
+            judgedValue:
+              type: number
+              format: double
+              description: Override the billable value of the time.
+            judgedValueReasonCode:
+              type: string
+              description: Provide a reason why you're using a judged value to override the billable value.
+                  
     NonClientTimeEntryCreate:
       type: object
       required: [ userId, authorId, start, duration, wipCode ]
       properties:
-        userId:
-          type: string
-          format: uuid
-          description: The id of the user recording the time, possibly different from who the time is recorded for.
-        authorId:
-          type: string
-          format: uuid
-          description: The id of the user who the time is recorded for.
         start:
           type: string
           format: date-time
@@ -495,7 +491,15 @@ components:
             id:
               type: string
               format: uuid
-
+            userId:
+              type: string
+              format: uuid
+              description: The id of the user recording the time, possibly different from who the time is recorded for.
+            authorId:
+              type: string
+              format: uuid
+              description: The id of the user who the time is recorded for.
+      
     WipCode:
       type: object
       properties:
@@ -759,7 +763,7 @@ paths:
       description: Text note recorded against a party, can also have a warning flag.
       parameters:
         - $ref: '#/components/parameters/partyId'
-      tags: [Parties]
+      tags: [Party Notes]
       responses:
         '200':
           description: Successful response.
@@ -778,7 +782,7 @@ paths:
       - $ref: '#/components/parameters/idempotencyKey'
         required: true
       - $ref: '#/components/parameters/partyId'
-      tags: [Parties]
+      tags: [Party Notes]
       requestBody:
         required: true
         content:
@@ -809,8 +813,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/partyId'
       - $ref: '#/components/parameters/noteId'
-      tags: 
-      -  Parties
+      tags: [Party Notes]
       requestBody:
         required: true
         content:
@@ -923,7 +926,7 @@ paths:
     get:
       operationId: getMatterNotes
       summary: Get all notes for a matter
-      tags: [Matters]
+      tags: [Matter Notes]
       responses:
         '200':
           description: Successful response.
@@ -941,7 +944,7 @@ paths:
       - $ref: '#/components/parameters/idempotencyKey'
         required: true
       summary: Create a note for a matter
-      tags: [Matters]
+      tags: [Matter Notes]
       requestBody:
         required: true
         content:
@@ -972,8 +975,7 @@ paths:
     get:
       operationId: getMatterNote
       summary: Get a note by ID
-      tags:
-      - Matters
+      tags: [Matter Notes]
       responses:
         '200':
           description: Successful response.
@@ -986,8 +988,7 @@ paths:
     put:
       operationId: updateMatterNote
       summary: Update an existing note
-      tags: 
-      -  Matters
+      tags: [Matter Notes]
       requestBody:
         required: true
         content:
@@ -1053,7 +1054,7 @@ paths:
       operationId: getNonClientTimeByUser
       summary: Get all non-client time for a user
       description: Time spent on non-client parties, so not immediately billable.
-      tags: [Time Entries]
+      tags: [Non-Client Time Entries]
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
@@ -1070,7 +1071,7 @@ paths:
       operationId: saveNonClientTimeByUser
       summary: Save non-client time for a user
       description: Time spent on non-client parties, so not immediately billable.
-      tags: [Time Entries]
+      tags: [Non-Client Time Entries]
       requestBody:
         required: true
         content:
@@ -1099,7 +1100,7 @@ paths:
     put:
       operationId: updateNonClientTime
       summary: Update non-client time for a user
-      tags: [Time Entries]
+      tags: [Non-Client Time Entries]
       requestBody:
         required: true
         content:
