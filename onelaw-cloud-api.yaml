@@ -119,13 +119,13 @@ components:
     limit:
       name: limit
       in: query
-      description: Max items to return (1-100).
+      description: Max items to return.
       required: false
       schema:
         type: integer
         minimum: 1
-        default: 50
-        maximum: 100
+        default: 250
+        maximum: 500
 
     offset:
       name: offset
@@ -147,7 +147,7 @@ components:
         Idempotency-Key request header as defined in draft-ietf-httpapi-idempotency-key-header-06.
         Send a value (typically a UUID v4) that is **unique to this semantic request**.  When the same key is reused with an
         identical payload, the server MUST return the original response instead of performing the action again.
-      required: false
+      required: true
       schema:
         type: string
         example: 'c7b5e4fb-3f05-4d84-8a4a-08f3d9b9ca2e'
@@ -259,16 +259,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PartyRole'
-        clientId:
-          type: string
-          format: uuid
-          nullable: true
-          description: The client id of the party if the party is a client.
-        userId:
-          type: string
-          format: uuid
-          nullable: true
-          description: The user id of the party if the party is a user.
+        client:
+          $ref: '#/components/schemas/Client'
+        user:
+          $ref: '#/components/schemas/User'
         telephoneNumbers:
           type: array
           items:
@@ -336,25 +330,50 @@ components:
 
     Client:
       type: object
+      description: The client relationship between the party and the law firm, if this party is a client.
       properties:
-        clientNumber:
+        id:
           type: string
-          description: Firm-specific client reference.
-        matters: 
-          type: array
-          items:
-            $ref: '#/components/schemas/Matter'
-        party:
-          $ref: '#/components/schemas/Party'
+          format: uuid
+          description: The resource ID of the client relationship.
+        partyId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The resource ID of the party who has this client relationship.
+        created:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the party became a client of the law firm, can be after the party was created.
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the client was deactivated, if they are. Clients can also be reactivated.
+        number:
+          type: string
+          description: The user reference for the client relationship.
 
     User:
       type: object
+      description: The party's user record if they're a staff member who uses OneLaw Cloud.
       properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+          description: The resource ID of the user record.
+        partyId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The resource ID of the party who owns this user record.
         username:
           type: string
-        party:
-          $ref: '#/components/schemas/Party'
-
+          nullable: false
+          description: The user's user name.
+  
     Matter:
       type: object
       required: [id, clientId, title, status, openedDate]
@@ -617,18 +636,24 @@ components:
           type: string
 
   responses:
+
     NotFound:
       description: Resource not found.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+
     BadRequest:
       description: Request validation failed, see body for details
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+
+    Deleted:
+      description: Resource successfully deleted
+        
 
 paths:
 
@@ -767,12 +792,12 @@ paths:
   #
 
   /parties/{partyId}/notes:
+    parameters:
+      - $ref: '#/components/parameters/partyId'
     get:
       operationId: getPartyNotes
       summary: Get all notes on a party
       description: Text note recorded against a party, can also have a warning flag.
-      parameters:
-        - $ref: '#/components/parameters/partyId'
       tags: [Party Notes]
       responses:
         '200':
@@ -790,8 +815,6 @@ paths:
       summary: Create a note on a party
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
-        required: true
-      - $ref: '#/components/parameters/partyId'
       tags: [Party Notes]
       requestBody:
         required: true
@@ -817,13 +840,29 @@ paths:
           $ref: '#/components/responses/NotFound'
 
   /parties/{partyId}/notes/{noteId}:
+    get:
+      operationId: getPartyNote
+      summary: Get a party note by ID
+      tags: [Party Notes]
+      parameters:
+        - $ref: '#/components/parameters/partyId'
+        - $ref: '#/components/parameters/noteId'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '404':
+          $ref: '#/components/responses/NotFound'
     put:
       operationId: updatePartyNote
       summary: Update an existing party note
+      tags: [Party Notes]
       parameters:
       - $ref: '#/components/parameters/partyId'
       - $ref: '#/components/parameters/noteId'
-      tags: [Party Notes]
       requestBody:
         required: true
         content:
@@ -851,11 +890,6 @@ paths:
       description: Parties that have the Client role and therefore also matters with the law firm.
       tags: [Clients]
       parameters:
-        - name: updatedAfter
-          in: query
-          schema:
-            type: string
-            format: date-time
         - name: deactivatedAfter
           in: query
           schema:
@@ -952,7 +986,6 @@ paths:
       operationId: saveMatterNote
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
-        required: true
       summary: Create a note for a matter
       tags: [Matter Notes]
       requestBody:
@@ -1014,7 +1047,16 @@ paths:
                 $ref: '#/components/schemas/Note'
         '404':
           $ref: '#/components/responses/NotFound'
-
+    delete:
+      operationId: deleteMatterNote
+      summary: Delete a matter note
+      tags: [Matter Notes]
+      responses:
+        '204':
+          $ref: '#/components/responses/Deleted'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      
   #        
   # Users
   #
@@ -1035,23 +1077,6 @@ paths:
                   $ref: '#/components/schemas/User'
         '400':
           description: Bad request.
-            
-  /users/{userId}:
-    parameters:
-      - $ref: '#/components/parameters/userId'
-    get:
-      operationId: getUser
-      summary: Get a user by ID
-      tags: [Users]
-      responses:
-        '200':
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '404':
-          $ref: '#/components/responses/NotFound'
 
   #
   # Non-client Time (recorded against a user)
@@ -1155,7 +1180,6 @@ paths:
       operationId: saveTimeToMatter
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
-        required: true
       summary: Add a time entry to a matter
       tags: [Time Entries]
       requestBody:
