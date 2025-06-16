@@ -2,7 +2,7 @@ openapi: 3.0.3
 
 info:
   title: OneLaw Cloud API
-  version: 0.3.0
+  version: 0.4.0
   license: 
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -11,9 +11,9 @@ info:
     OneLaw Cloud provides a RESTful interface for managing parties, clients, matters, and time entries for law firms.
 
 servers:
-  - url: https://integration.onepractice.net/v1
+  - url: https://integration.service.onepractice.net/api/v1
     description: Integration / Testing
-  - url: https://api.onepractice.net/v1
+  - url: https://production.service.onepractice.net/api/v1
     description: Production
 
 tags:
@@ -167,7 +167,7 @@ components:
 
     TelcoAddress:
       type: object
-      required: [type, phone, phoneE164, country]
+      required: [type, phone ]
       properties:
         type:
           type: string
@@ -243,6 +243,7 @@ components:
           type: string
         systemType:
           $ref: '#/components/schemas/SystemPartyType'
+      additionalProperties: false
 
     Party:
       type: object
@@ -285,6 +286,9 @@ components:
           format: date-time
           readOnly: true
           nullable: true
+        cddStatus:
+          type: string
+          description: Summary description of CDD status of this client.
       additionalProperties: false
 
     Person:
@@ -296,11 +300,13 @@ components:
               $ref: '#/components/schemas/PersonName'
             employer:
               type: string
+          additionalProperties: false
 
     LegalEntity:
       allOf:
         - $ref: '#/components/schemas/Party'
         - type: object
+          additionalProperties: false
 
     MultiParty:
       allOf:
@@ -311,6 +317,7 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Party'
+          additionalProperties: false
 
     PersonName:
       type: object
@@ -327,6 +334,7 @@ components:
           type: string
         knownAs:
           type: string
+      additionalProperties: false
 
     Client:
       type: object
@@ -354,6 +362,10 @@ components:
         number:
           type: string
           description: The user reference for the client relationship.
+        stopCredit:
+          type: boolean
+          description: No further services will be supplied to this client on credit.
+      additionalProperties: false
 
     User:
       type: object
@@ -373,7 +385,8 @@ components:
           type: string
           nullable: false
           description: The user's user name.
-  
+      additionalProperties: false
+
     Matter:
       type: object
       required: [id, clientId, title, status, openedDate]
@@ -397,6 +410,7 @@ components:
         subFeeTypeId:
           type: string
           format: uuid
+      additionalProperties: false
 
     NoteCreate:
       type: object
@@ -410,6 +424,7 @@ components:
           description: If true, displays a prominent warning to users.
         visibility:
           $ref: '#/components/schemas/NoteVisibility'
+      additionalProperties: false
 
     Note:
       allOf:
@@ -426,6 +441,7 @@ components:
           lastUpdated:
             type: string
             format: date-time
+        additionalProperties: false
 
     TimeEntryBase:
       type: object
@@ -450,6 +466,7 @@ components:
           type: string
           format: uuid
           description: high level categorization of the work performed, should default to the sub fee type of the matter.
+      additionalProperties: false
         
     TimeEntryCreate:
       allOf:
@@ -461,6 +478,7 @@ components:
               type: string
               format: uuid
               description: The ID of the rate used to bill this time
+          additionalProperties: false
     
     TimeEntry:
       allOf:
@@ -482,6 +500,7 @@ components:
             judged:
               type: boolean
               description: Whether or not the value of the time entry was judged.
+          additionalProperties: false
                   
     NonClientTimeEntryCreate:
       type: object
@@ -501,6 +520,7 @@ components:
           description: The code for a low level categorization of the work performed, loaded from wipcodes path.
         note:
           type: string
+      additionalProperties: false
 
     NonClientTimeEntry:
       allOf:
@@ -519,7 +539,8 @@ components:
               type: string
               format: uuid
               description: The id of the user who the time is recorded for.
-      
+          additionalProperties: false
+
     WipCode:
       type: object
       properties:
@@ -536,6 +557,7 @@ components:
           type: boolean
         active:
           type: boolean
+      additionalProperties: false
 
     RateType:
       type: object
@@ -552,6 +574,7 @@ components:
           type: string
         active:
           type: boolean
+      additionalProperties: false
 
     JudgedValueReason:
       type: object
@@ -563,6 +586,7 @@ components:
           type: string
         description:
           type: string
+      additionalProperties: false
 
     PartyPagedResponse:
       type: object
@@ -573,6 +597,7 @@ components:
             $ref: '#/components/schemas/Party'
         total:
           type: integer
+      additionalProperties: false
 
     ClientPagedResponse:
       type: object
@@ -583,6 +608,7 @@ components:
             $ref: '#/components/schemas/Client'
         total:
           type: integer
+      additionalProperties: false
 
     NonClientTimeEntryPagedResponse:
       type: object
@@ -593,6 +619,7 @@ components:
             $ref: '#/components/schemas/NonClientTimeEntry'
         total:
           type: integer
+      additionalProperties: false
 
     TimeEntryPagedResponse:
       type: object
@@ -603,6 +630,7 @@ components:
             $ref: '#/components/schemas/TimeEntry'
         total:
           type: integer
+      additionalProperties: false
 
     FeeType:
       type: object
@@ -616,6 +644,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SubFeeType'
+      additionalProperties: false
 
     SubFeeType:
       type: object
@@ -625,7 +654,8 @@ components:
           format: uuid
         name:
           type: string
-    
+      additionalProperties: false
+
     Error:
       type: object
       required: [code, message]
@@ -634,6 +664,7 @@ components:
           type: string
         message:
           type: string
+      additionalProperties: false
 
   responses:
 
