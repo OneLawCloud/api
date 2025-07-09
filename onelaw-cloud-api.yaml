@@ -11,34 +11,32 @@ info:
     OneLaw Cloud provides a RESTful interface for managing parties, clients, matters, and time entries for law firms.
 
 servers:
-  - url: https://integration.service.onepractice.net/api/v1
-    description: Integration / Testing
-  - url: https://production.service.onepractice.net/api/v1
-    description: Production
+- url: https://integration.service.onepractice.net/api/v1
+  description: Integration / Testing
+- url: https://production.service.onepractice.net/api/v1
+  description: Production
 
 tags:
-  - name: Parties
-    description: All individuals, organisations, or groups (e.g. trusts) involved in legal matters.
-  - name: Party Notes
-    description: Text notes on Parties
-  - name: Clients
-    description: Parties that have a client relationship with the law firm.
-  - name: Matters
-    description: Legal matters that the law firm works on for their clients.
-  - name: Matter Notes
-    description: Text notes on Matters
-  - name: Time Entries
-    description: Billable or time recorded against legal matters by users
-  - name: Non-Client Time Entries
-    description: Non-billable time recorded against users.
-  - name: Users
-    description: Staff members who use the software.
-  - name: Codes
-    description: Codes used for categorisation and reporting
+- name: Parties
+  description: All individuals, organisations, or groups (e.g. trusts) involved in legal matters.
+- name: Party Notes
+  description: Text notes on Parties
+- name: Clients
+  description: Parties that have a client relationship with the law firm.
+- name: Matters
+  description: Legal matters that the law firm works on for their clients.
+- name: Matter Notes
+  description: Text notes on Matters
+- name: Time Entries
+  description: Billable or time recorded against legal matters by users
+- name: Users
+  description: Staff members who use the software.
+- name: Codes
+  description: Codes used for categorisation and reporting
 
 security:
-  - OAuth2:
-      - access_as_user
+- OAuth2:
+  - access_as_user
 
 components:
   securitySchemes:
@@ -92,14 +90,6 @@ components:
       in: path
       required: true
       description: Unique identifier of a time entry.
-      schema:
-        type: string
-        format: uuid
-    nonClientTimeEntryId:
-      name: nonClientTimeEntryId
-      in: path
-      required: true
-      description: Unique identifier of a non-client time entry.
       schema:
         type: string
         format: uuid
@@ -289,6 +279,9 @@ components:
         cddStatus:
           type: string
           description: Summary description of CDD status of this client.
+        cddRequired:
+          type: boolean
+          description: Whether or not the firm needs to perform CDD on this party.
       additionalProperties: false
 
     Person:
@@ -389,7 +382,7 @@ components:
 
     Matter:
       type: object
-      required: [id, clientId, title, status, openedDate]
+      required: [id, number, accountNumber, description, createdDate, subFeeTypeId]
       properties:
         id:
           type: string
@@ -400,6 +393,9 @@ components:
           type: integer
           description: The user-visible number used to refer to the matter.
           readOnly: true
+        accountNumber:
+          type: string
+          description: Widely used user-reference including the client and matter numbers together.
         description:
           type: string
         createdDate:
@@ -435,6 +431,9 @@ components:
           id:
             type: string
             format: uuid
+          type:
+            type: string
+            description: The type of note, notes created through the API are all standard.
           created:
             type: string
             format: date-time
@@ -501,45 +500,6 @@ components:
               type: boolean
               description: Whether or not the value of the time entry was judged.
           additionalProperties: false
-                  
-    NonClientTimeEntryCreate:
-      type: object
-      required: [ userId, authorId, start, duration, wipCode ]
-      properties:
-        start:
-          type: string
-          format: date-time
-          description: The start date and time of the time entry, time is recorded in 6 minute intervals so the minutes component must be mod 6.
-        duration:
-          type: integer
-          minimum: 6
-          multipleOf: 6
-          description: Duration of the time entry in minutes and always a multiple of 6.
-        wipCode:
-          type: string
-          description: The code for a low level categorization of the work performed, loaded from wipcodes path.
-        note:
-          type: string
-      additionalProperties: false
-
-    NonClientTimeEntry:
-      allOf:
-        - $ref: '#/components/schemas/NonClientTimeEntryCreate'
-        - type: object
-          required: [id, userId, authorId, matterId, start, duration, wipCode ]
-          properties:
-            id:
-              type: string
-              format: uuid
-            userId:
-              type: string
-              format: uuid
-              description: The id of the user recording the time, possibly different from who the time is recorded for.
-            authorId:
-              type: string
-              format: uuid
-              description: The id of the user who the time is recorded for.
-          additionalProperties: false
 
     WipCode:
       type: object
@@ -597,6 +557,10 @@ components:
             $ref: '#/components/schemas/Party'
         total:
           type: integer
+        lastUpdated:
+          type: string
+          format: date-time
+          description: The latest time that any parties were updated. If this changes between loading pages then consider restarting or catching up with updatedAfter filter.
       additionalProperties: false
 
     ClientPagedResponse:
@@ -608,28 +572,10 @@ components:
             $ref: '#/components/schemas/Client'
         total:
           type: integer
-      additionalProperties: false
-
-    NonClientTimeEntryPagedResponse:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/NonClientTimeEntry'
-        total:
-          type: integer
-      additionalProperties: false
-
-    TimeEntryPagedResponse:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/TimeEntry'
-        total:
-          type: integer
+        lastUpdated:
+          type: string
+          format: date-time
+          description: The latest time that any clients were updated. If this changes between loading pages then consider restarting or catching up with updatedAfter filter.
       additionalProperties: false
 
     FeeType:
@@ -684,7 +630,6 @@ components:
 
     Deleted:
       description: Resource successfully deleted
-        
 
 paths:
 
@@ -708,7 +653,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/FeeType'
         '400':
-          description: Bad request.
+          $ref: '#/components/responses/BadRequest'
 
   #
   # Judged Value Reasons
@@ -730,8 +675,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/JudgedValueReason'
         '400':
-          description: Bad request.
-            
+          $ref: '#/components/responses/BadRequest'
+
   # WIP Codes
   /wip-codes:
     get:
@@ -749,7 +694,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/WipCode'
         '400':
-          description: Bad request.
+          $ref: '#/components/responses/BadRequest'
 
   #
   # Rate Types
@@ -771,7 +716,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/RateType'
         '400':
-          description: Bad request.
+          $ref: '#/components/responses/BadRequest'
 
   #
   # Parties
@@ -786,6 +731,7 @@ paths:
       parameters:
         - name: updatedAfter
           in: query
+          description: Filter results to just those updated after the specified UTC time stamp.
           schema:
             type: string
             format: date-time
@@ -799,8 +745,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/PartyPagedResponse'
         '400':
-          description: Bad request.
-            
+          $ref: '#/components/responses/BadRequest'
+
   /parties/{partyId}:
     parameters:
       - $ref: '#/components/parameters/partyId'
@@ -841,6 +787,7 @@ paths:
                   $ref: '#/components/schemas/Note'
         '404':
           $ref: '#/components/responses/NotFound'
+
     post:
       operationId: savePartyNote
       summary: Create a note on a party
@@ -861,6 +808,7 @@ paths:
               description: URL of the new resource.
               schema:
                 type: string
+                format: uri
           content:
             application/json:
               schema:
@@ -887,6 +835,7 @@ paths:
                 $ref: '#/components/schemas/Note'
         '404':
           $ref: '#/components/responses/NotFound'
+
     put:
       operationId: updatePartyNote
       summary: Update an existing party note
@@ -936,7 +885,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ClientPagedResponse'
         '400':
-          description: Bad request.
+          $ref: '#/components/responses/BadRequest'
             
   /clients/{clientId}:
     parameters:
@@ -1033,6 +982,7 @@ paths:
               description: URL of the new resource.
               schema:
                 type: string
+                format: uri
           content:
             application/json:
               schema:
@@ -1107,81 +1057,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/User'
         '400':
-          description: Bad request.
-
-  #
-  # Non-client Time (recorded against a user)
-  #
-
-  /users/{userId}/non-client-time-entries:
-    parameters:
-      - $ref: '#/components/parameters/userId'
-    get:
-      operationId: getNonClientTimeByUser
-      summary: Get all non-client time for a user
-      description: Time spent on non-client parties, so not immediately billable.
-      tags: [Non-Client Time Entries]
-      parameters:
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
-      responses:
-        '200':
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NonClientTimeEntryPagedResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    post:
-      operationId: saveNonClientTimeByUser
-      summary: Save non-client time for a user
-      description: Time spent on non-client parties, so not immediately billable.
-      tags: [Non-Client Time Entries]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NonClientTimeEntryCreate'
-      responses:
-        '201':
-          description: Created
-          headers:
-            Location:
-              description: URL of the new resource.
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NonClientTimeEntry'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /users/{userId}/non-client-time-entries/{nonClientTimeEntryId}:
-    parameters:
-      - $ref: '#/components/parameters/userId'
-      - $ref: '#/components/parameters/nonClientTimeEntryId'
-    put:
-      operationId: updateNonClientTime
-      summary: Update non-client time for a user
-      tags: [Non-Client Time Entries]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NonClientTimeEntryCreate'
-      responses:
-        '200':
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NonClientTimeEntry'
-        '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/BadRequest'
 
   #
   # Time Recording
@@ -1204,9 +1080,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TimeEntryPagedResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeEntry'
         '404':
           $ref: '#/components/responses/NotFound'
+
     post:
       operationId: saveTimeToMatter
       parameters:
@@ -1227,6 +1106,7 @@ paths:
               description: URL of the new resource.
               schema:
                 type: string
+                format: uri
           content:
             application/json:
               schema:
