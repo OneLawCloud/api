@@ -29,10 +29,16 @@ tags:
   description: Text notes on Matters
 - name: Time Entries
   description: Billable or time recorded against legal matters by users
+- name: Document Categories
+  description: Categories used to organise the document library
+- name: Documents
+  description: Documents managed in a structured library
 - name: Users
   description: Staff members who use the software.
 - name: Codes
   description: Codes used for categorisation and reporting
+- name: Status
+  description: API status checks
 
 security:
 - OAuth2:
@@ -101,6 +107,29 @@ components:
       schema:
         type: string
         format: uuid
+    uploadId:
+      name: uploadId
+      in: path
+      required: true
+      description: Unique identifier of an uploaded file
+      schema:
+        type: string
+        format: uuid
+    documentId:
+      name: documentId
+      in: path
+      required: true
+      description: Unique identifier of a managed document.
+      schema:
+        type: string
+        format: uuid
+    active:
+      name: active
+      in: query
+      required: false
+      description: Filter to only active matters
+      schema:
+        type: boolean
 
     #
     # Common Paging Params
@@ -406,6 +435,8 @@ components:
         subFeeTypeId:
           type: string
           format: uuid
+        active:
+          type: boolean
       additionalProperties: false
 
     NoteCreate:
@@ -612,6 +643,126 @@ components:
           type: string
       additionalProperties: false
 
+    Ping:
+      type: object
+      required: [status, version, timeStamp]
+      properties:
+        status:
+          type: string
+        timeStamp:
+          type: string
+          format: date-time
+      additionalProperties: false
+
+    Upload:
+      type: object
+      required: [ id, name, size, method, url, headers, successStatusCodes, expiry ]
+      properties:
+        id:
+          type: string
+          description: The unique identifier for this upload. Use this when attaching the uploaded file to other resources.
+        url:
+          type: string
+          format: uri
+          description: The URL to which the file must be uploaded.
+        fileName:
+          type: string
+          description: The name of the file to upload, including its extension.
+        fileSize:
+          type: integer
+          format: int64
+          description: The size of the file to upload in bytes. Uploads larger than this will be rejected or truncated.
+        contentType:
+          type: string
+          format: MIME
+          description: The MIME type of the file to upload.
+        expiry:
+          type: string
+          format: date-time
+          description: The UTC time after which the upload will no longer be accepted and the resource may be deleted.
+      additionalProperties: false
+
+    Convert:
+      type: object
+      properties: 
+        to:
+          type: string
+          enum: [ pdf ]
+          description: The file type to convert the upload to
+      additionalProperties: false
+
+    DocumentSource:
+      type: object
+      description: A source of content to create documents from.
+      properties:
+        type:
+          type: string
+          enum: [ upload ]
+        uploadId:
+          type: string
+          format: uuid
+          description: ID of a uploaded file to create as a document, only required if type = upload
+      additionalProperties: false
+
+    DocumentBase:
+      type: object
+      required: [ name ]
+      properties:
+        name:
+          type: string
+          description: Free text name of the document, can be different to the file name.
+        date:
+          type: string
+          format: date
+          description: A date for the document, e.g. the date an email was received.
+        categories:
+          type: array
+          items: 
+            type: string
+          description: Optional list of categories to organize the document.
+      additionalProperties: false
+
+    DocumentCreate:
+      allOf:
+      - $ref: '#/components/schemas/DocumentBase'
+      - type: object
+        required: [ name, source ]
+        properties:
+          source:
+            $ref: '#/components/schemas/DocumentSource'
+            description: Where the document content should come from
+        additionalProperties: false
+
+    Document:
+      allOf:
+      - $ref: '#/components/schemas/DocumentBase'
+      - type: object
+        required: [id, number, created, type, name, categories]
+        properties:
+          id:
+            type: string
+            format: uuid
+          number:
+            type: string
+            description: The user reference for the document.
+          created:
+            type: string
+            format: date-time
+          type:
+            type: string
+            enum: [ Unknown, Email, WordDocument, WordTemplate, RTF, PDF, ExcelDocument, ExcelTemplate, Custom ]
+            description: Type of document
+        additionalProperties: false
+    
+    DocumentCategories:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: 
+            type: string
+
   responses:
 
     NotFound:
@@ -632,6 +783,212 @@ components:
       description: Resource successfully deleted
 
 paths:
+
+  #
+  # Party document categories
+  #
+
+  /parties/{partyId}/documents/categories:
+    get:
+      operationId: getPartyDocumentCategories
+      summary: Party document categories
+      description: Get document categories available when managing documents to a specific party
+      tags: [Document Categories]
+      parameters: 
+      - $ref: "#/components/parameters/partyId"
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentCategories'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Matter document categories
+  #
+
+  /matters/{matterId}/documents/categories:
+    get:
+      operationId: getMatterDocumentCategories
+      summary: Matter document categories
+      description: Get document categories available when managing documents to a specific matter
+      tags: [Document Categories]
+      parameters: 
+      - $ref: "#/components/parameters/matterId"
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentCategories'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Document upload
+  # 
+
+  /uploads:
+    post:
+      operationId: saveUploadTicket
+      summary: Create resource representing a file upload
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      tags: [Documents]
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Upload'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /uploads/{uploadId}/conversions:
+    post:
+      operationId: convertUploadTicket
+      summary: Convert an uploaded file to another type
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      - $ref: '#/components/parameters/uploadId'
+      tags: [Documents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Convert'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Upload'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Manage document at party level
+  #
+
+  /parties/{partyId}/documents:
+    post:
+      operationId: savePartyDocument
+      summary: Create a managed document at the party level
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      - $ref: "#/components/parameters/partyId"
+      tags: [Documents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Manage document at matter level
+  #
+
+  /matters/{matterId}/documents:
+    post:
+      operationId: saveMatterDocument
+      summary: Create a managed document at the matter level
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      - $ref: "#/components/parameters/matterId"
+      tags: [Documents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Delete documents
+  #
+
+  /documents/{documentId}:
+    delete:
+      operationId: deleteDocument
+      summary: Delete a document
+      tags: [Documents]
+      parameters:
+      - $ref: '#/components/parameters/documentId'
+      responses: 
+        '204':
+          description: Successfully deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # Utility
+  #
+
+  /ping:
+    get:
+      operationId: getPing
+      summary: Get liveness of API
+      description: Used to check API is live.
+      tags: [Status]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ping'
 
   #
   # Fee Types & Sub Fee Types
@@ -911,6 +1268,7 @@ paths:
   /clients/{clientId}/matters:
     parameters:
       - $ref: '#/components/parameters/clientId'
+      - $ref: '#/components/parameters/active'
     get:
       operationId: getMattersByClient
       summary: Get all matters for a client
