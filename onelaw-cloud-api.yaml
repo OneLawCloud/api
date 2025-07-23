@@ -75,14 +75,6 @@ components:
       schema:
         type: string
         format: uuid
-    userId:
-      name: userId
-      in: path
-      required: true
-      description: Unique identifier of a user.
-      schema:
-        type: string
-        format: uuid
     matterId:
       name: matterId
       in: path
@@ -130,6 +122,18 @@ components:
       description: Filter to only active matters
       schema:
         type: boolean
+    relatedContactPartyId:
+      name: partyId
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+          format: uuid
+      style: form
+      explode: true
+      description: One or more party IDs that you want to find related parties for
 
     #
     # Common Paging Params
@@ -594,6 +598,39 @@ components:
           description: The latest time that any parties were updated. If this changes between loading pages then consider restarting or catching up with updatedAfter filter.
       additionalProperties: false
 
+    RelatedContactResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedContact'
+      additionalProperties: false
+
+    RelatedContact:
+      type: object
+      description: Describes a relationship between a known party that you provided and a related party found by OLC.
+      required: [ knownPartyId, relationship, relatedPartyId ]
+      properties:
+        knownPartyId:
+          type: string
+          format: uuid
+          description: The ID of the known party in the relationship. Will be one of the partyIds you provided.
+        relationship:
+          type: string
+          description: A human-readable description of the relationship, either fully qualified or written from the side of the related party.
+          example: Aaron is the counter party contact on Bob's matter "ABC"
+        relatedPartyId:
+          type: string
+          format: uuid
+          description: The ID of the party related to the known party.
+        relatedMatterId:
+          type: string
+          format: uuid
+          nullable: true
+          description: If the relationship involves a matter, this is the ID.
+      additionalProperties: false
+
     ClientPagedResponse:
       type: object
       properties:
@@ -656,7 +693,7 @@ components:
 
     Upload:
       type: object
-      required: [ id, name, size, method, url, headers, successStatusCodes, expiry ]
+      required: [ id, url, fileName, fileSize, expiry ]
       properties:
         id:
           type: string
@@ -667,15 +704,15 @@ components:
           description: The URL to which the file must be uploaded.
         fileName:
           type: string
-          description: The name of the file to upload, including its extension.
+          description: The name of the file uploaded.
         fileSize:
           type: integer
           format: int64
-          description: The size of the file to upload in bytes. Uploads larger than this will be rejected or truncated.
+          description: The size of the file uploaded.
         contentType:
           type: string
           format: MIME
-          description: The MIME type of the file to upload.
+          description: The MIME type of the file uploaded.
         expiry:
           type: string
           format: date-time
@@ -835,7 +872,21 @@ paths:
   /uploads:
     post:
       operationId: saveUploadTicket
-      summary: Create resource representing a file upload
+      summary: Create resource representing a file uploaded to a temporary staging area
+      description: |
+        Uploading a document into OLC's document library involves several steps
+        1. Create an upload "ticket" by posting to this endpoint with an empty body. 
+           An upload ID and URL will be returned (see Upload schema).
+        2. Upload the actual file to the provided URL by PUTing to the URL provided. 
+           In the request body, using multipart/form-data encoding, provide the file contents including 
+           filename and content-type. For example:
+
+           `curl -L -X PUT '{Upload URL}' -F 'file=@"{File Path}"'`
+        3. Finally, create a managed document using the upload ID at one of the following endpoints:
+           ``` 
+           POST /parties/{partyId}/documents
+           POST /matters/{matterId}/documents
+           ``` 
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
       tags: [Documents]
@@ -859,6 +910,11 @@ paths:
     post:
       operationId: convertUploadTicket
       summary: Convert an uploaded file to another type
+      description: |
+        Can be used to convert an upload from one file format to another before
+        storing it in the document library. Creates a new upload from an existing one. 
+        Only supports certain conversions:
+        - HTML to PDF
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
       - $ref: '#/components/parameters/uploadId'
@@ -893,6 +949,8 @@ paths:
     post:
       operationId: savePartyDocument
       summary: Create a managed document at the party level
+      description: Manage a file into the OLC document library at the party level. The file must first be uploaded
+        to the /uploads endpoint.
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
       - $ref: "#/components/parameters/partyId"
@@ -927,6 +985,8 @@ paths:
     post:
       operationId: saveMatterDocument
       summary: Create a managed document at the matter level
+      description: Manage a file into the OLC document library at the matter level. The file must first be uploaded
+        to the /uploads endpoint.
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
       - $ref: "#/components/parameters/matterId"
@@ -961,6 +1021,7 @@ paths:
     delete:
       operationId: deleteDocument
       summary: Delete a document
+      description: Delete a managed document from the OLC document library.
       tags: [Documents]
       parameters:
       - $ref: '#/components/parameters/documentId'
@@ -989,6 +1050,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Ping'
+        '403':
+          description: The user does not have permission to use the API.
+        '404':
+          description: The law firm is running a version of OLC that doesn't support the API.
 
   #
   # Fee Types & Sub Fee Types
@@ -1120,6 +1185,28 @@ paths:
                 $ref: '#/components/schemas/Party'
         '404':
           $ref: '#/components/responses/NotFound'
+
+  #
+  # Party Related Contacts
+  #
+
+  /parties/related-contacts:
+    get:
+      operationId: getPartyRelatedContacts
+      summary: Get parties related to other parties.
+      description: Provide a list of party IDs to receive a list of relationships with other parties.
+      tags: [Parties]
+      parameters:
+      - $ref: '#/components/parameters/relatedContactPartyId'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelatedContactResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   #
   # Party Notes
