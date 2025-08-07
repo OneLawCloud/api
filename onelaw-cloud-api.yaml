@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.0.4
 
 info:
   title: OneLaw Cloud API
@@ -65,56 +65,49 @@ components:
       required: true
       description: Unique identifier of a party.
       schema:
-        type: string
-        format: uuid
+        $ref: '#/components/schemas/ID'
     clientId:
       name: clientId
       in: path
       required: true
       description: Unique identifier of a client.
       schema:
-        type: string
-        format: uuid
+        $ref: '#/components/schemas/ID'
     matterId:
       name: matterId
       in: path
       required: true
       description: Unique identifier of a matter.
       schema:
-        type: string
-        format: uuid
+        $ref: '#/components/schemas/ID'
     timeEntryId:
       name: timeEntryId
       in: path
       required: true
       description: Unique identifier of a time entry.
       schema:
-        type: string
-        format: uuid
+        $ref: '#/components/schemas/ID'
     noteId:
       name: noteId
       in: path
       required: true
       description: Unique identifier of a note.
       schema:
-        type: string
-        format: uuid
+        $ref: '#/components/schemas/ID'
     uploadId:
       name: uploadId
       in: path
       required: true
       description: Unique identifier of an uploaded file
       schema:
-        type: string
-        format: uuid
+        $ref: '#/components/schemas/ID'
     documentId:
       name: documentId
       in: path
       required: true
       description: Unique identifier of a managed document.
       schema:
-        type: string
-        format: uuid
+        $ref: '#/components/schemas/ID'
     active:
       name: active
       in: query
@@ -122,6 +115,13 @@ components:
       description: Filter to only active matters
       schema:
         type: boolean
+    text:
+      name: text
+      in: query
+      required: true
+      description: Full text search argument
+      schema:
+        type: string
     relatedContactPartyId:
       name: partyId
       in: query
@@ -129,8 +129,7 @@ components:
       schema:
         type: array
         items:
-          type: string
-          format: uuid
+          $ref: '#/components/schemas/ID'
       style: form
       explode: true
       description: One or more party IDs that you want to find related parties for
@@ -273,8 +272,7 @@ components:
       required: [ name, type, roles ]
       properties:
         id:
-          type: string
-          format: uuid
+          $ref: '#/components/schemas/ID'
         name:
           type: string
         type:
@@ -461,7 +459,7 @@ components:
       allOf:
       - $ref: '#/components/schemas/NoteCreate'
       - type: object
-        required: [id, note, visibility, warning, created, lastUpdated]
+        required: [id, created, lastUpdated]
         properties:
           id:
             type: string
@@ -506,7 +504,7 @@ components:
       allOf:
         - $ref: '#/components/schemas/TimeEntryBase'
         - type: object
-          required: [start, duration, wipCodeId, timeRateId, subFeeTypeId]
+          required: [ timeRateId ]
           properties:
             timeRateId:
               type: string
@@ -518,7 +516,7 @@ components:
       allOf:
         - $ref: '#/components/schemas/TimeEntryBase'
         - type: object
-          required: [id, authorId, matterId, start, duration, wipCodeId, subFeeTypeId]
+          required: [id, authorId, matterId ]
           properties:
             id:
               type: string
@@ -682,7 +680,7 @@ components:
 
     Ping:
       type: object
-      required: [status, version, timeStamp]
+      required: [status, timeStamp]
       properties:
         status:
           type: string
@@ -763,18 +761,17 @@ components:
       allOf:
       - $ref: '#/components/schemas/DocumentBase'
       - type: object
-        required: [ name, source ]
+        required: [ source ]
         properties:
           source:
             $ref: '#/components/schemas/DocumentSource'
-            description: Where the document content should come from
         additionalProperties: false
 
     Document:
       allOf:
       - $ref: '#/components/schemas/DocumentBase'
       - type: object
-        required: [id, number, created, type, name, categories]
+        required: [id, number, created, type ]
         properties:
           id:
             type: string
@@ -799,6 +796,111 @@ components:
           type: array
           items: 
             type: string
+
+    SearchResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResultGroup'
+      additionalProperties: false
+
+    SearchResultType:
+      type: string
+      enum: [ party, activeClient, inactiveClient, openMatter, closedMatter, invoice, address, phone, email, taxNumber, bankAccountNumber ]
+            
+    SearchResultGroup:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/SearchResultType'
+        count:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResultItem'
+      additionalProperties: false
+
+    SearchResultItem:
+      type: object
+      properties:
+        exactMatch:
+          type: boolean
+        partyId:
+          $ref: '#/components/schemas/ID'
+          nullable: true
+        matterId:
+          $ref: '#/components/schemas/ID'
+          nullable: true
+        text:
+          type: string
+        subText:
+          type: string
+        partyType:
+          $ref: '#/components/schemas/SystemPartyType'
+          nullable: true
+        client:
+          type: boolean
+      additionalProperties: false
+
+    SearchPartyResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchPartyResult'
+      additionalProperties: false
+
+    SearchPartyResult:
+      type: object
+      description: Client searches in CMP now support finding client and matter by Account Number
+      properties:
+        partyId:
+          $ref: '#/components/schemas/ID'
+        clientId:
+          $ref: '#/components/schemas/ID'
+          nullable: true
+        name:
+          type: string
+        partyType:
+          $ref: '#/components/schemas/SystemPartyType'
+        clientNumber:
+          type: string
+        address:
+          type: string
+        active:
+          type: boolean
+          nullable: true
+        creditStopped:
+          type: boolean
+          nullable: true
+        cddRequired:
+          type: boolean
+        exactMatch:
+          type: boolean
+        matterId:
+          $ref: '#/components/schemas/ID'
+          nullable: true
+        matterName:
+          type: string
+        matterNumber:
+          type: integer
+          nullable: true
+        matterActive:
+          type: boolean
+          nullable: true
+        capturedActivity:
+          type: boolean
+          nullable: true
+          description: Indicates whether activity has been captured for this matter.
+      additionalProperties: false
+
+    ID:
+      type: string
+      format: uuid
 
   responses:
 
@@ -1185,6 +1287,50 @@ paths:
                 $ref: '#/components/schemas/Party'
         '404':
           $ref: '#/components/responses/NotFound'
+
+  #
+  # search
+  #
+
+  /search:
+    get:
+      operationId: getSearch
+      summary: Search over all parties, clients, matters, invoices, etc.
+      description: Perform a free-text search over OnePractice
+      tags: [Search]
+      parameters:
+      - $ref: '#/components/parameters/text'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Party search
+  #
+
+  /parties/search:
+    get:
+      operationId: getPartySearch
+      summary: Search over all clients and parties.
+      description: Perform a free-text search over parties & clients
+      tags: [Parties]
+      parameters:
+      - $ref: '#/components/parameters/text'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchPartyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   #
   # Party Related Contacts
