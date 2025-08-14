@@ -2,7 +2,7 @@ openapi: 3.0.4
 
 info:
   title: OneLaw Cloud API
-  version: 0.5.0
+  version: 0.6.0
   license: 
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -117,8 +117,8 @@ components:
       description: Filter to only active matters
       schema:
         type: boolean
-    text:
-      name: text
+    q:
+      name: q
       in: query
       required: true
       description: Full text search argument
@@ -415,7 +415,7 @@ components:
 
     Matter:
       type: object
-      required: [id, number, accountNumber, description, createdDate, subFeeTypeId]
+      required: [id, number, accountNumber, description, created, subFeeTypeId]
       properties:
         id:
           type: string
@@ -431,9 +431,9 @@ components:
           description: Widely used user-reference including the client and matter numbers together.
         description:
           type: string
-        createdDate:
+        created:
           type: string
-          format: date
+          format: date-time
           readOnly: true
           nullable: true
         subFeeTypeId:
@@ -697,6 +697,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
           description: The unique identifier for this upload. Use this when attaching the uploaded file to other resources.
         url:
           type: string
@@ -731,6 +732,7 @@ components:
     DocumentSource:
       type: object
       description: A source of content to create documents from.
+      required: [ type ]
       properties:
         type:
           type: string
@@ -833,6 +835,9 @@ components:
         partyId:
           $ref: '#/components/schemas/ID'
           nullable: true
+        clientId:
+          $ref: '#/components/schemas/ID'
+          nullable: true
         matterId:
           $ref: '#/components/schemas/ID'
           nullable: true
@@ -843,8 +848,6 @@ components:
         partyType:
           $ref: '#/components/schemas/SystemPartyType'
           nullable: true
-        client:
-          type: boolean
       additionalProperties: false
 
     SearchPartyResponse:
@@ -1301,7 +1304,7 @@ paths:
       description: Perform a free-text search over OnePractice
       tags: [ Search ]
       parameters:
-      - $ref: '#/components/parameters/text'
+      - $ref: '#/components/parameters/q'
       responses:
         '200':
           description: Successful response.
@@ -1323,7 +1326,7 @@ paths:
       description: Perform a free-text search over parties & clients
       tags: [ Search ]
       parameters:
-      - $ref: '#/components/parameters/text'
+      - $ref: '#/components/parameters/q'
       responses:
         '200':
           description: Successful response.
