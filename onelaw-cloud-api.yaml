@@ -1258,14 +1258,34 @@ paths:
       description: Parties are all the people and legal entitites involved in legal matters.
       tags: [Parties]
       parameters:
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
         - name: updatedAfter
           in: query
-          description: Filter results to just those updated after the specified UTC time stamp.
+          description: Get parties updated after the specified UTC time stamp.
           schema:
             type: string
             format: date-time
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
+        - name: contactableBy
+          in: query
+          description: Filters parties by available contact details. Supports multiple values and boolean operations. See examples for details.
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [phone, email, address]
+          style: form
+          explode: true
+          examples:
+            single:
+              summary: Get parties with a phone number
+              description: GET /parties?contactableBy=phone
+            or:
+              summary: Get parties with a phone number or email address
+              description: GET /parties?contactableBy=phone,email
+            and:
+              summary: Get parties with a phone number and address
+              description: GET /parties?contactableBy=phone&contactableBy=address
       responses:
         '200':
           description: Successful response.
