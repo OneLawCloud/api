@@ -439,6 +439,12 @@ components:
         subFeeTypeId:
           type: string
           format: uuid
+          description: The default sub fee type used to record work on this matter
+        rateTypeId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The default time rate type used to record work on this matter
         active:
           type: boolean
       additionalProperties: false
