@@ -440,10 +440,11 @@ components:
           type: string
           format: uuid
           description: The default sub fee type used to record work on this matter
-        rateTypeId:
+        effectiveRateTypeId:
           type: string
           format: uuid
           nullable: true
+          readOnly: true
           description: The default time rate type used to record work on this matter
         active:
           type: boolean
