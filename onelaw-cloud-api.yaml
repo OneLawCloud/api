@@ -210,7 +210,6 @@ components:
           items: 
             type: string
           description: The uses for which this is the primary number.
-      additionalProperties: false
 
     GeoAddress:
       type: object
@@ -241,7 +240,6 @@ components:
           items: 
             type: string
           description: The uses for which this is the primary number.
-      additionalProperties: false
 
     EmailAddress:
       type: object
@@ -258,7 +256,6 @@ components:
           items: 
             type: string
           description: The uses for which this is the primary number.
-      additionalProperties: false
 
     PartyType:
       type: object
@@ -267,7 +264,6 @@ components:
           type: string
         systemType:
           $ref: '#/components/schemas/SystemPartyType'
-      additionalProperties: false
 
     Party:
       type: object
@@ -315,7 +311,6 @@ components:
         cddRequired:
           type: boolean
           description: Whether or not the firm needs to perform CDD on this party.
-      additionalProperties: false
 
     Person:
       allOf:
@@ -326,13 +321,11 @@ components:
               $ref: '#/components/schemas/PersonName'
             employer:
               type: string
-          additionalProperties: false
 
     LegalEntity:
       allOf:
         - $ref: '#/components/schemas/Party'
         - type: object
-          additionalProperties: false
 
     MultiParty:
       allOf:
@@ -343,7 +336,6 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Party'
-          additionalProperties: false
 
     PersonName:
       type: object
@@ -360,7 +352,6 @@ components:
           type: string
         knownAs:
           type: string
-      additionalProperties: false
 
     Client:
       type: object
@@ -391,7 +382,6 @@ components:
         stopCredit:
           type: boolean
           description: No further services will be supplied to this client on credit.
-      additionalProperties: false
 
     User:
       type: object
@@ -411,7 +401,6 @@ components:
           type: string
           nullable: false
           description: The user's user name.
-      additionalProperties: false
 
     Matter:
       type: object
@@ -448,7 +437,6 @@ components:
           description: The default time rate type used to record work on this matter
         active:
           type: boolean
-      additionalProperties: false
 
     NoteCreate:
       type: object
@@ -462,7 +450,6 @@ components:
           description: If true, displays a prominent warning to users.
         visibility:
           $ref: '#/components/schemas/NoteVisibility'
-      additionalProperties: false
 
     Note:
       allOf:
@@ -482,7 +469,6 @@ components:
           lastUpdated:
             type: string
             format: date-time
-        additionalProperties: false
 
     TimeEntryBase:
       type: object
@@ -507,7 +493,6 @@ components:
           type: string
           format: uuid
           description: high level categorization of the work performed, should default to the sub fee type of the matter.
-      additionalProperties: false
         
     TimeEntryCreate:
       allOf:
@@ -519,7 +504,6 @@ components:
               type: string
               format: uuid
               description: The ID of the rate used to bill this time
-          additionalProperties: false
     
     TimeEntry:
       allOf:
@@ -541,7 +525,6 @@ components:
             judged:
               type: boolean
               description: Whether or not the value of the time entry was judged.
-          additionalProperties: false
 
     WipCode:
       type: object
@@ -559,7 +542,6 @@ components:
           type: boolean
         active:
           type: boolean
-      additionalProperties: false
 
     RateType:
       type: object
@@ -576,7 +558,6 @@ components:
           type: string
         active:
           type: boolean
-      additionalProperties: false
 
     JudgedValueReason:
       type: object
@@ -588,7 +569,6 @@ components:
           type: string
         description:
           type: string
-      additionalProperties: false
 
     PartyPagedResponse:
       type: object
@@ -603,7 +583,6 @@ components:
           type: string
           format: date-time
           description: The latest time that any parties were updated. If this changes between loading pages then consider restarting or catching up with updatedAfter filter.
-      additionalProperties: false
 
     RelatedContactResponse:
       type: object
@@ -612,7 +591,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RelatedContact'
-      additionalProperties: false
 
     RelatedContact:
       type: object
@@ -636,7 +614,6 @@ components:
           format: uuid
           nullable: true
           description: If the relationship involves a matter, this is the ID.
-      additionalProperties: false
 
     ClientPagedResponse:
       type: object
@@ -651,7 +628,6 @@ components:
           type: string
           format: date-time
           description: The latest time that any clients were updated. If this changes between loading pages then consider restarting or catching up with updatedAfter filter.
-      additionalProperties: false
 
     FeeType:
       type: object
@@ -665,7 +641,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SubFeeType'
-      additionalProperties: false
 
     SubFeeType:
       type: object
@@ -675,7 +650,6 @@ components:
           format: uuid
         name:
           type: string
-      additionalProperties: false
 
     Error:
       type: object
@@ -685,7 +659,6 @@ components:
           type: string
         message:
           type: string
-      additionalProperties: false
 
     Ping:
       type: object
@@ -696,7 +669,6 @@ components:
         timeStamp:
           type: string
           format: date-time
-      additionalProperties: false
 
     Upload:
       type: object
@@ -725,7 +697,6 @@ components:
           type: string
           format: date-time
           description: The UTC time after which the upload will no longer be accepted and the resource may be deleted.
-      additionalProperties: false
 
     Convert:
       type: object
@@ -734,7 +705,6 @@ components:
           type: string
           enum: [ pdf ]
           description: The file type to convert the upload to
-      additionalProperties: false
 
     DocumentSource:
       type: object
@@ -748,7 +718,6 @@ components:
           type: string
           format: uuid
           description: ID of a uploaded file to create as a document, only required if type = upload
-      additionalProperties: false
 
     DocumentBase:
       type: object
@@ -766,7 +735,6 @@ components:
           items: 
             type: string
           description: Optional list of categories to organize the document.
-      additionalProperties: false
 
     DocumentCreate:
       allOf:
@@ -776,7 +744,6 @@ components:
         properties:
           source:
             $ref: '#/components/schemas/DocumentSource'
-        additionalProperties: false
 
     Document:
       allOf:
@@ -797,7 +764,6 @@ components:
             type: string
             enum: [ Unknown, Email, WordDocument, WordTemplate, RTF, PDF, ExcelDocument, ExcelTemplate, Custom ]
             description: Type of document
-        additionalProperties: false
     
     DocumentCategories:
       type: object
@@ -815,7 +781,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchResultGroup'
-      additionalProperties: false
 
     SearchResultType:
       type: string
@@ -832,7 +797,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchResultItem'
-      additionalProperties: false
 
     SearchResultItem:
       type: object
@@ -855,7 +819,6 @@ components:
         partyType:
           $ref: '#/components/schemas/SystemPartyType'
           nullable: true
-      additionalProperties: false
 
     SearchPartyResponse:
       type: object
@@ -864,7 +827,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchPartyResult'
-      additionalProperties: false
 
     SearchPartyResult:
       type: object
@@ -908,7 +870,6 @@ components:
           type: boolean
           nullable: true
           description: Indicates whether activity has been captured for this matter.
-      additionalProperties: false
 
     ID:
       type: string
