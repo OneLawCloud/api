@@ -2,21 +2,20 @@ openapi: 3.0.4
 
 info:
   title: OneLaw Cloud API
-  version: 1.0.0
+  version: 1.1.0
   license: 
     name: MIT
     url: https://opensource.org/licenses/MIT
-      
-  description: >
+  description: |
     OneLaw Cloud provides a RESTful interface for managing parties, clients, matters, and time entries for law firms.
 
 servers:
-- url: https://integration.service.onepractice.net/api/v1
+- url: https://firm.service.onepractice.net/api/v1
   description: Integration / Testing
-- url: https://production.service.onepractice.net/api/v1
-  description: Production
 
 tags:
+- name: Firm
+  description: The law firm
 - name: Parties
   description: All individuals, organisations, or groups (e.g. trusts) involved in legal matters
 - name: Party Notes
@@ -27,12 +26,16 @@ tags:
   description: Legal matters that the law firm works on for their clients
 - name: Matter Notes
   description: Text notes on Matters
+- name: Matter External Links
+  description: Links between OneLaw matters and workspaces in 3rd party services
+- name: External Links
+  description: Links between OneLaw data and workspaces in 3rd party services
 - name: Time Entries
   description: Billable or time recorded against legal matters by users
-- name: Document Categories
-  description: Categories used to organise the document library
 - name: Documents
   description: Documents managed in a structured library
+- name: Document Categories
+  description: Categories used to organise the document library
 - name: Search
   description: Global and scoped search endpoints
 - name: Users
@@ -43,22 +46,23 @@ tags:
   description: API status checks
 
 security:
-- OAuth2:
-  - access_as_user
+- oauth2:
+  - "https://onepracticecloud.onmicrosoft.com/olc-api/access_as_user"
+  - "openid"
+  - "offline_access"
 
 components:
   securitySchemes:
-    OAuth2:
+    oauth2:
       type: oauth2
       flows:
         authorizationCode:
-          authorizationUrl: https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/oauth2/v2.0/authorize?p=b2c_1_si
-          tokenUrl:         https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/oauth2/v2.0/token?p=b2c_1_si
+          authorizationUrl: "https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/B2C_1_si_api/oauth2/v2.0/authorize"
+          tokenUrl:         "https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/B2C_1_si_api/oauth2/v2.0/token"
           scopes:
-            openid:         OpenID Connect ID token
-            profile:        Basic user info
-            access_as_user: Access resources impersonating user
-            offline_access: Refresh tokens
+            "https://onepracticecloud.onmicrosoft.com/olc-api/access_as_user": "Access the OneLaw Cloud API as the signed-in user."
+            "openid": "Request basic OIDC ID token claims."
+            "offline_access": "Request a refresh token for long-lived access."
 
   parameters:
     partyId:
@@ -87,6 +91,13 @@ components:
       in: path
       required: true
       description: Unique identifier of a time entry.
+      schema:
+        $ref: '#/components/schemas/ID'
+    externalLinkId:
+      name: externalLinkId
+      in: path
+      required: true
+      description: Unique identifier of an external matter link.
       schema:
         $ref: '#/components/schemas/ID'
     noteId:
@@ -239,7 +250,7 @@ components:
           type: array
           items: 
             type: string
-          description: The uses for which this is the primary number.
+          description: The uses for which this is the primary address.
 
     EmailAddress:
       type: object
@@ -255,7 +266,7 @@ components:
           type: array
           items: 
             type: string
-          description: The uses for which this is the primary number.
+          description: The uses for which this is the primary email address.
 
     PartyType:
       type: object
@@ -311,6 +322,23 @@ components:
         cddRequired:
           type: boolean
           description: Whether or not the firm needs to perform CDD on this party.
+
+    Firm:
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+          description: The 'firm guid' used to identify the law firm in documents and emails.
+        cloudId:
+          type: string
+          description: ID used to distinguish law firms in the OneLaw Cloud system. Included in Access Token claims to link users to their law firms.
+        name:
+          type: string
+          description: The name of the law firm
+        currentMonth:
+          type: string
+          format: date
+          nullable: true
+          description: The month that is currently being processed by the firm, expressed as the date of first day of the local calendar month (not UTC)
 
     Person:
       allOf:
@@ -651,6 +679,26 @@ components:
         name:
           type: string
 
+    ExternalLinkCreate:
+      type: object
+      properties:
+        url:
+          type: string
+          format: url
+          description: A URL to vendor-hosted workspace linked to this matter.
+        status:
+          type: string
+          description: A vendor-specific status indicator
+
+    ExternalLink:
+      allOf:
+      - $ref: '#/components/schemas/ExternalLinkCreate'
+      - type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+
     Error:
       type: object
       required: [code, message]
@@ -692,7 +740,7 @@ components:
         contentType:
           type: string
           format: MIME
-          description: The MIME type of the file uploaded.
+          description: The MIME type of the file uploaded (e.g. application/pdf).
         expiry:
           type: string
           format: date-time
@@ -895,6 +943,24 @@ components:
       description: Resource successfully deleted
 
 paths:
+
+  #
+  # Firm
+  #
+
+  /firm:
+    get:
+      operationId: getFirm
+      summary: Law firm details
+      description: Get details of the law firm
+      tags: [Firm]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Firm'
 
   #
   # Party document categories
@@ -1102,7 +1168,7 @@ paths:
       - $ref: '#/components/parameters/documentId'
       responses: 
         '204':
-          description: Successfully deleted
+          $ref: '#/components/responses/Deleted'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -1223,7 +1289,7 @@ paths:
     get:
       operationId: getParties
       summary: Get all parties
-      description: Parties are all the people and legal entitites involved in legal matters.
+      description: Parties are all the people and legal entities involved in legal matters.
       tags: [Parties]
       parameters:
         - $ref: '#/components/parameters/offset'
@@ -1655,9 +1721,6 @@ paths:
       summary: Get all time entries for a matter
       description: Regular time entries recorded on matters that will be billed.
       tags: [Time Entries]
-      parameters: 
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/offset'
       responses:
         '200':
           description: Successful response.
@@ -1721,5 +1784,108 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TimeEntry'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # Matter External Links
+  #
+
+  /matters/{matterId}/external-links:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
+    get:
+      operationId: getMatterExternalLinks
+      summary: Get all external links for a matter
+      description: Links between matters and workspaces in 3rd party web services
+      tags: [ Matter External Links ]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalLink'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      operationId: saveMatterExternalLink
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      summary: Link a matter to an external system.
+      tags: [ Matter External Links ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalLinkCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalLink'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # External Links - Canonical
+  #
+
+  /external-links/{externalLinkId}:
+    parameters:
+      - $ref: '#/components/parameters/externalLinkId'
+    get:
+      operationId: getExternalLink
+      summary: Get an existing external link
+      tags: [ External Links ]
+      responses: 
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalLink'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      operationId: updateExternalLink
+      summary: Update an existing external link
+      tags: [ External Links ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalLinkCreate'
+      responses: 
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalLink'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: deleteExternalLink
+      summary: Delete an external link
+      tags: [ External Links ]
+      responses: 
+        '204':
+          $ref: '#/components/responses/Deleted'
         '404':
           $ref: '#/components/responses/NotFound'
