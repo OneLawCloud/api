@@ -2,7 +2,7 @@ openapi: 3.0.4
 
 info:
   title: OneLaw Cloud API
-  version: 0.6.0
+  version: 1.0.0
   license: 
     name: MIT
     url: https://opensource.org/licenses/MIT
