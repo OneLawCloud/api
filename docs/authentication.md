@@ -2,19 +2,19 @@
 
 ## Overview
 
-The OneLaw Cloud API uses the standard OAuth 2.0 Authorization Code flow to authenticate users and authorize access to their firm’s data.
-This is the same protocol used by many modern APIs and identity systems. Your integration application (“client”) redirects a user to sign in, the user grants consent, and your app receives an authorization code that can be exchanged for an access token.
+The OneLaw Cloud API uses the standard OAuth 2.0 Authorization Code flow to authenticate users and authorize access to their firm's data.
+This is the same protocol used by many modern APIs and identity systems. Your integration application ("client") redirects a user to sign in, the user grants consent, and your app receives an authorization code that can be exchanged for an access token.
 
 Each integration must be registered with OneLaw before use.
-During registration, you must supply one or more redirect URIs (where the user will be returned after sign-in).
+During registration, you must supply one or more redirect URIs.
 After registration, OneLaw will issue you a Client ID and Client Secret, which your application uses in the authorization and token exchange process.
 
 ## Authorization and Token Endpoints
 
 Endpoint Type | URL
 --------------|----
-Authorization URL | https://onelawcloud.b2clogin.com/onelawcloud.onmicrosoft.com/oauth2/v2.0/authorize?p=B2C_1A_SignIn
-Token URL | https://onelawcloud.b2clogin.com/onelawcloud.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_SignIn
+Authorization URL | https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/B2C_1_si_api/oauth2/v2.0/authorize
+Token URL | https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/B2C_1_si_api/oauth2/v2.0/token
 
 (These URLs are also published in the OpenAPI specification.)
 
@@ -22,8 +22,8 @@ Token URL | https://onelawcloud.b2clogin.com/onelawcloud.onmicrosoft.com/oauth2/
 
 Scope | Description
 ------|------------
-access_as_user | Grants access to the OneLaw Cloud API on behalf of the signed-in user.
-openid | Requests an OpenID Connect ID token so the user’s identity can be confirmed.
+https://onepracticecloud.onmicrosoft.com/olc-api/access_as_user | Grants access to the OneLaw Cloud API on behalf of the signed-in user.
+openid | Requests an OpenID Connect ID token so the user's identity can be confirmed.
 offline_access | Allows your app to receive a refresh token, enabling silent sign-in and token renewal without user interaction.
 
 Your app should request all three scopes unless you have a specific reason to omit one.
@@ -31,37 +31,24 @@ Your app should request all three scopes unless you have a specific reason to om
 Example:
 
 ```
-scope=access_as_user openid offline_access
+scope=https://onepracticecloud.onmicrosoft.com/olc-api/access_as_user openid offline_access
 ```
 
 ## Tokens
 
 When your app exchanges an authorization code, the token endpoint returns:
 
-- access_token – used in the Authorization: Bearer <token> header for all API calls.
+- access_token – used in the "Authorization: Bearer < token >" header for all API calls.
 - refresh_token – used to obtain a new access token without user interaction.
 - id_token – (optional) an identity token containing standard OpenID Connect claims.
 
 Access tokens include a OneLaw-specific claim called FirmCloudId, which identifies the tenant (law firm) that the signed-in user belongs to.
-You don’t need to handle this claim directly — when you pass the access token to the OneLaw configuration service, that service reads the claim and returns the correct API base URL for the firm.
+You don't need to handle this claim directly — when you pass the access token to the OneLaw configuration service, that service reads the claim and returns the correct API base URL for the firm.
 
 ## Step-by-Step Example
 
 There are many ways to perform the OAuth 2.0 Authorization Code flow, depending on the language or framework you use.
 Most major platforms provide robust client libraries and SDKs that handle the details of URL construction, redirects, and token exchange for you.
-
-Here are some common options used by OneLaw integrators:
-
-Language / Platform | Recommended Library or Tool
---------------------|----------------------------
-.NET / C# | Microsoft.Identity.Client (MSAL.NET)
-JavaScript / Node.js | openid-client or passport-azure-ad
-Python | Authlib or requests-oauthlib
-Java | Spring Security OAuth2 Client
-Postman | Built-in Authorization → OAuth 2.0 support
-Browser-only apps | Use a front-end library such as MSAL.js
-
-Each of these libraries follows the same underlying protocol — the standard OAuth 2.0 Authorization Code flow — but differ in syntax and framework integration.
 
 The example below demonstrates the process using only a browser and curl, so you can clearly see what happens at each step, regardless of which library or SDK you later choose to implement.
 
@@ -70,7 +57,7 @@ The example below demonstrates the process using only a browser and curl, so you
 Construct the authorization URL:
 
 ```
-https://onelawcloud.b2clogin.com/onelawcloud.onmicrosoft.com/oauth2/v2.0/authorize?p=B2C_1A_SignIn
+https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/B2C_1_si_api/oauth2/v2.0/authorize
   ?client_id={YOUR_CLIENT_ID}
   &response_type=code
   &redirect_uri={YOUR_REDIRECT_URI}
@@ -88,7 +75,7 @@ https://yourapp.example.com/oauth/callback?code=ABC123
 Use curl (or your HTTP library) to POST the code to the token endpoint:
 
 ```
-curl -X POST https://onelawcloud.b2clogin.com/onelawcloud.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_SignIn \
+curl -X POST https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/B2C_1_si_api/oauth2/v2.0/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=authorization_code" \
   -d "client_id={YOUR_CLIENT_ID}" \
@@ -105,11 +92,11 @@ The response will include access_token, refresh_token, and id_token fields.
 Use the access token in the Authorization header:
 
 ```
-curl https://api.onelawcloud.co.nz/some-endpoint \
-  -H "Authorization: Bearer eyJ0eXAiOiJKV..."
+curl https://example.onepractice.net/api/v1/parties \
+  -H "Authorization: Bearer {YOUR_ACCESS_TOKEN}"
 ```
 
-If the token is valid, the API will return data for the signed-in user’s firm.
+If the token is valid, the API will return data for the signed-in user's firm.
 
 ### Token Lifetime and Refresh
 
@@ -120,7 +107,7 @@ Refresh tokens remain valid for a longer period (typically 14 days, subject to u
 When your app receives an invalid_token or HTTP 401 response, or when the access token nears expiry, request a new one using the refresh token:
 
 ```
-curl -X POST https://onelawcloud.b2clogin.com/onelawcloud.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_SignIn \
+curl -X POST https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/B2C_1_si_api/oauth2/v2.0/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=refresh_token" \
   -d "client_id={YOUR_CLIENT_ID}" \
@@ -136,11 +123,12 @@ Issue | Explanation / Fix
 ------|------------------
 Redirect URI mismatch | The URI in your authorization request must exactly match one registered with OneLaw (including scheme, domain, and trailing slash).
 Missing or incorrect scopes | If you omit access_as_user, the API will reject requests. Always include openid and offline_access for full functionality.
-Invalid client credentials | Ensure your client secret hasn’t expired and is sent in the token exchange step, not the initial authorize request.
-Using an expired access token | Refresh tokens before expiry; don’t reuse expired access tokens.
-Calling the API before discovering the base URL | Always use the configuration service to obtain the tenant’s API base URL before making API calls.
+Using an expired access token | Refresh tokens before expiry; don't reuse expired access tokens.
+Calling the API before discovering the base URL | Always use the configuration service to obtain the tenant's API base URL before making API calls.
 Incorrect Content-Type | The token request must use application/x-www-form-urlencoded, not JSON.
 
 ## Next Steps
 
 [Tenancy Model](tenancy.md)
+
+[Home](index.md)

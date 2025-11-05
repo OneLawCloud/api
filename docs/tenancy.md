@@ -17,7 +17,7 @@ You can discover the correct base URL by calling the configuration service endpo
 
 ```
 GET https://config.onepractice.net/instance/production/firm
-Authorization: Bearer XXXXXXX
+Authorization: Bearer {YOUR_ACCESS_TOKEN}
 ```
 
 ### Example response
@@ -39,7 +39,7 @@ For example, to retrieve the list of parties:
 
 ```
 GET https://example.onepractice.net/api/v1/parties
-Authorization: Bearer XXXXXXX
+Authorization: Bearer {YOUR_ACCESS_TOKEN}
 ```
 
 Every API request must include a valid access token in the Authorization header, and it must use the base URL returned from the configuration service.
@@ -48,3 +48,5 @@ The API will reject requests sent to the wrong tenant or without a valid token.
 ## Next Steps
 
 [Using the API](usingtheapi.md)
+
+[Home](index.md)

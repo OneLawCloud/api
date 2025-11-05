@@ -1,0 +1,1891 @@
+openapi: 3.0.4
+
+info:
+  title: OneLaw Cloud API
+  version: 1.1.0
+  license: 
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  description: |
+    OneLaw Cloud provides a RESTful interface for managing parties, clients, matters, and time entries for law firms.
+
+servers:
+- url: https://firm.service.onepractice.net/api/v1
+  description: Integration / Testing
+
+tags:
+- name: Firm
+  description: The law firm
+- name: Parties
+  description: All individuals, organisations, or groups (e.g. trusts) involved in legal matters
+- name: Party Notes
+  description: Text notes on Parties
+- name: Clients
+  description: Parties that have a client relationship with the law firm
+- name: Matters
+  description: Legal matters that the law firm works on for their clients
+- name: Matter Notes
+  description: Text notes on Matters
+- name: Matter External Links
+  description: Links between OneLaw matters and workspaces in 3rd party services
+- name: External Links
+  description: Links between OneLaw data and workspaces in 3rd party services
+- name: Time Entries
+  description: Billable or time recorded against legal matters by users
+- name: Documents
+  description: Documents managed in a structured library
+- name: Document Categories
+  description: Categories used to organise the document library
+- name: Search
+  description: Global and scoped search endpoints
+- name: Users
+  description: Staff members who use the software
+- name: Codes
+  description: Codes used for categorisation and reporting
+- name: Status
+  description: API status checks
+
+security:
+- oauth2:
+  - "https://onepracticecloud.onmicrosoft.com/olc-api/access_as_user"
+  - "openid"
+  - "offline_access"
+
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: "https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/B2C_1_si_api/oauth2/v2.0/authorize"
+          tokenUrl:         "https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/B2C_1_si_api/oauth2/v2.0/token"
+          scopes:
+            "https://onepracticecloud.onmicrosoft.com/olc-api/access_as_user": "Access the OneLaw Cloud API as the signed-in user."
+            "openid": "Request basic OIDC ID token claims."
+            "offline_access": "Request a refresh token for long-lived access."
+
+  parameters:
+    partyId:
+      name: partyId
+      in: path
+      required: true
+      description: Unique identifier of a party.
+      schema:
+        $ref: '#/components/schemas/ID'
+    clientId:
+      name: clientId
+      in: path
+      required: true
+      description: Unique identifier of a client.
+      schema:
+        $ref: '#/components/schemas/ID'
+    matterId:
+      name: matterId
+      in: path
+      required: true
+      description: Unique identifier of a matter.
+      schema:
+        $ref: '#/components/schemas/ID'
+    timeEntryId:
+      name: timeEntryId
+      in: path
+      required: true
+      description: Unique identifier of a time entry.
+      schema:
+        $ref: '#/components/schemas/ID'
+    externalLinkId:
+      name: externalLinkId
+      in: path
+      required: true
+      description: Unique identifier of an external matter link.
+      schema:
+        $ref: '#/components/schemas/ID'
+    noteId:
+      name: noteId
+      in: path
+      required: true
+      description: Unique identifier of a note.
+      schema:
+        $ref: '#/components/schemas/ID'
+    uploadId:
+      name: uploadId
+      in: path
+      required: true
+      description: Unique identifier of an uploaded file
+      schema:
+        $ref: '#/components/schemas/ID'
+    documentId:
+      name: documentId
+      in: path
+      required: true
+      description: Unique identifier of a managed document.
+      schema:
+        $ref: '#/components/schemas/ID'
+    active:
+      name: active
+      in: query
+      required: false
+      description: Filter to only active matters
+      schema:
+        type: boolean
+    q:
+      name: q
+      in: query
+      required: true
+      description: Full text search argument
+      schema:
+        type: string
+    relatedContactPartyId:
+      name: partyId
+      in: query
+      required: false
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/ID'
+      style: form
+      explode: true
+      description: One or more party IDs that you want to find related parties for
+
+    #
+    # Common Paging Params
+    #
+
+    limit:
+      name: limit
+      in: query
+      description: Max items to return.
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 250
+        maximum: 500
+
+    offset:
+      name: offset
+      in: query
+      description: Zero-based index of first item to return.
+      required: false
+      schema:
+        type: integer
+        default: 0
+
+    #
+    # Idempotency
+    #
+
+    idempotencyKey:
+      name: Idempotency-Key
+      in: header
+      description: >
+        Idempotency-Key request header as defined in draft-ietf-httpapi-idempotency-key-header-06.
+        Send a value (typically a UUID v4) that is **unique to this semantic request**.  When the same key is reused with an
+        identical payload, the server MUST return the original response instead of performing the action again.
+      required: true
+      schema:
+        type: string
+        example: 'c7b5e4fb-3f05-4d84-8a4a-08f3d9b9ca2e'
+
+  schemas:
+    SystemPartyType:
+      type: string
+      enum: [natural, legal, multi]
+
+    PartyRole:
+      type: string
+      enum: [client, user]
+
+    NoteVisibility:
+      type: string
+      enum: [public, private, team]
+
+    TelcoAddress:
+      type: object
+      required: [type, phone ]
+      properties:
+        type:
+          type: string
+          description: Domain-specific label (e.g. "mobile", "work").
+        phone:
+          type: string
+          description: Phone number in local format.
+        phoneE164:
+          type: string
+          description: Phone number in international E.164 format.
+        country:
+          type: string
+          description: Country name or ISO country code.
+        primaryUses:
+          type: array
+          items: 
+            type: string
+          description: The uses for which this is the primary number.
+
+    GeoAddress:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          description: Domain-specific label (e.g. "street", "postal").
+        address:
+          type: string
+          description: Full address (multi-line text).
+        country:
+          type: string
+          description: Country code
+        postcode:
+          type: string
+        street:
+          type: string
+          description: Street number and name
+        suburb:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        primaryUses:
+          type: array
+          items: 
+            type: string
+          description: The uses for which this is the primary address.
+
+    EmailAddress:
+      type: object
+      required: [type, email]
+      properties:
+        type:
+          type: string
+          description: Domain-specific label (e.g. "work", "personal").
+        email:
+          type: string
+          format: email
+        primaryUses:
+          type: array
+          items: 
+            type: string
+          description: The uses for which this is the primary email address.
+
+    PartyType:
+      type: object
+      properties:
+        name:
+          type: string
+        systemType:
+          $ref: '#/components/schemas/SystemPartyType'
+
+    Party:
+      type: object
+      required: [ name, type, roles ]
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/PartyType'
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartyRole'
+        client:
+          $ref: '#/components/schemas/Client'
+        user:
+          $ref: '#/components/schemas/User'
+        telephoneNumbers:
+          type: array
+          items:
+            $ref: '#/components/schemas/TelcoAddress'
+        emailAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmailAddress'
+        geographicAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoAddress'
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        lastUpdated:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        cddStatus:
+          type: string
+          description: Summary description of CDD status of this client.
+        cddRequired:
+          type: boolean
+          description: Whether or not the firm needs to perform CDD on this party.
+
+    Firm:
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+          description: The 'firm guid' used to identify the law firm in documents and emails.
+        cloudId:
+          type: string
+          description: ID used to distinguish law firms in the OneLaw Cloud system. Included in Access Token claims to link users to their law firms.
+        name:
+          type: string
+          description: The name of the law firm
+        currentMonth:
+          type: string
+          format: date
+          nullable: true
+          description: The month that is currently being processed by the firm, expressed as the date of first day of the local calendar month (not UTC)
+
+    Person:
+      allOf:
+        - $ref: '#/components/schemas/Party'
+        - type: object
+          properties:
+            personName:
+              $ref: '#/components/schemas/PersonName'
+            employer:
+              type: string
+
+    LegalEntity:
+      allOf:
+        - $ref: '#/components/schemas/Party'
+        - type: object
+
+    MultiParty:
+      allOf:
+        - $ref: '#/components/schemas/Party'
+        - type: object
+          properties:
+            members: 
+              type: array
+              items:
+                $ref: '#/components/schemas/Party'
+
+    PersonName:
+      type: object
+      properties:
+        title: 
+          type: string
+        first:
+          type: string
+        middle:
+          type: string
+        last:
+          type: string
+        suffix:
+          type: string
+        knownAs:
+          type: string
+
+    Client:
+      type: object
+      description: The client relationship between the party and the law firm, if this party is a client.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The resource ID of the client relationship.
+        partyId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The resource ID of the party who has this client relationship.
+        created:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the party became a client of the law firm, can be after the party was created.
+        deactivated:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the client was deactivated, if they are. Clients can also be reactivated.
+        number:
+          type: string
+          description: The user reference for the client relationship.
+        stopCredit:
+          type: boolean
+          description: No further services will be supplied to this client on credit.
+
+    User:
+      type: object
+      description: The party's user record if they're a staff member who uses OneLaw Cloud.
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+          description: The resource ID of the user record.
+        partyId:
+          type: string
+          format: uuid
+          nullable: true
+          description: The resource ID of the party who owns this user record.
+        username:
+          type: string
+          nullable: false
+          description: The user's user name.
+
+    Matter:
+      type: object
+      required: [id, number, accountNumber, description, created, subFeeTypeId]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The backend ID for the matter.
+          readOnly: true
+        number:
+          type: integer
+          description: The user-visible number used to refer to the matter.
+          readOnly: true
+        accountNumber:
+          type: string
+          description: Widely used user-reference including the client and matter numbers together.
+        description:
+          type: string
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        subFeeTypeId:
+          type: string
+          format: uuid
+          description: The default sub fee type used to record work on this matter
+        effectiveRateTypeId:
+          type: string
+          format: uuid
+          nullable: true
+          readOnly: true
+          description: The default time rate type used to record work on this matter
+        active:
+          type: boolean
+
+    NoteCreate:
+      type: object
+      required: [note, visibility, warning]
+      properties:
+        note:
+          type: string
+          description: Free-form note text.
+        warning:
+          type: boolean
+          description: If true, displays a prominent warning to users.
+        visibility:
+          $ref: '#/components/schemas/NoteVisibility'
+
+    Note:
+      allOf:
+      - $ref: '#/components/schemas/NoteCreate'
+      - type: object
+        required: [id, created, lastUpdated]
+        properties:
+          id:
+            type: string
+            format: uuid
+          type:
+            type: string
+            description: The type of note, notes created through the API are all standard.
+          created:
+            type: string
+            format: date-time
+          lastUpdated:
+            type: string
+            format: date-time
+
+    TimeEntryBase:
+      type: object
+      required: [ start, duration, wipCodeId, subFeeTypeId ]
+      properties:
+        start:
+          type: string
+          format: date-time
+          description: The start date and time of the time entry, time is recorded in 6 minute intervals so the minutes component must be mod 6.
+        duration:
+          type: integer
+          minimum: 6
+          multipleOf: 6
+          description: Duration of the time entry in minutes and always a multiple of 6.
+        wipCodeId:
+          type: string
+          format: uuid
+          description: The ID for a low level categorization of the work performed, loaded from wipcodes path.
+        note:
+          type: string
+        subFeeTypeId:
+          type: string
+          format: uuid
+          description: high level categorization of the work performed, should default to the sub fee type of the matter.
+        
+    TimeEntryCreate:
+      allOf:
+        - $ref: '#/components/schemas/TimeEntryBase'
+        - type: object
+          required: [ timeRateId ]
+          properties:
+            timeRateId:
+              type: string
+              format: uuid
+              description: The ID of the rate used to bill this time
+    
+    TimeEntry:
+      allOf:
+        - $ref: '#/components/schemas/TimeEntryBase'
+        - type: object
+          required: [id, authorId, matterId ]
+          properties:
+            id:
+              type: string
+              format: uuid
+            matterId:
+              type: string
+              format: uuid
+              description: The id of the matter the time should be billed to.
+            authorId:
+              type: string
+              format: uuid
+              description: The id of the user who the time is recorded for.
+            judged:
+              type: boolean
+              description: Whether or not the value of the time entry was judged.
+
+    WipCode:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        description:
+          type: string
+        narration:
+          type: string
+        chargeable:
+          type: boolean
+        active:
+          type: boolean
+
+    RateType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        default:
+          type: boolean
+          description: true if this is the default rate used for billing time.
+        description:
+          type: string
+        active:
+          type: boolean
+
+    JudgedValueReason:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        description:
+          type: string
+
+    PartyPagedResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Party'
+        total:
+          type: integer
+        lastUpdated:
+          type: string
+          format: date-time
+          description: The latest time that any parties were updated. If this changes between loading pages then consider restarting or catching up with updatedAfter filter.
+
+    RelatedContactResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedContact'
+
+    RelatedContact:
+      type: object
+      description: Describes a relationship between a known party that you provided and a related party found by OLC.
+      required: [ knownPartyId, relationship, relatedPartyId ]
+      properties:
+        knownPartyId:
+          type: string
+          format: uuid
+          description: The ID of the known party in the relationship. Will be one of the partyIds you provided.
+        relationship:
+          type: string
+          description: A human-readable description of the relationship, either fully qualified or written from the side of the related party.
+          example: Aaron is the counter party contact on Bob's matter "ABC"
+        relatedPartyId:
+          type: string
+          format: uuid
+          description: The ID of the party related to the known party.
+        relatedMatterId:
+          type: string
+          format: uuid
+          nullable: true
+          description: If the relationship involves a matter, this is the ID.
+
+    ClientPagedResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Client'
+        total:
+          type: integer
+        lastUpdated:
+          type: string
+          format: date-time
+          description: The latest time that any clients were updated. If this changes between loading pages then consider restarting or catching up with updatedAfter filter.
+
+    FeeType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        subFeeTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubFeeType'
+
+    SubFeeType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+
+    ExternalLinkCreate:
+      type: object
+      properties:
+        url:
+          type: string
+          format: url
+          description: A URL to vendor-hosted workspace linked to this matter.
+        status:
+          type: string
+          description: A vendor-specific status indicator
+
+    ExternalLink:
+      allOf:
+      - $ref: '#/components/schemas/ExternalLinkCreate'
+      - type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+    Ping:
+      type: object
+      required: [status, timeStamp]
+      properties:
+        status:
+          type: string
+        timeStamp:
+          type: string
+          format: date-time
+
+    Upload:
+      type: object
+      required: [ id, url, fileName, fileSize, expiry ]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The unique identifier for this upload. Use this when attaching the uploaded file to other resources.
+        url:
+          type: string
+          format: uri
+          description: The URL to which the file must be uploaded.
+        fileName:
+          type: string
+          description: The name of the file uploaded.
+        fileSize:
+          type: integer
+          format: int64
+          description: The size of the file uploaded.
+        contentType:
+          type: string
+          format: MIME
+          description: The MIME type of the file uploaded (e.g. application/pdf).
+        expiry:
+          type: string
+          format: date-time
+          description: The UTC time after which the upload will no longer be accepted and the resource may be deleted.
+
+    Convert:
+      type: object
+      properties: 
+        to:
+          type: string
+          enum: [ pdf ]
+          description: The file type to convert the upload to
+
+    DocumentSource:
+      type: object
+      description: A source of content to create documents from.
+      required: [ type ]
+      properties:
+        type:
+          type: string
+          enum: [ upload ]
+        uploadId:
+          type: string
+          format: uuid
+          description: ID of a uploaded file to create as a document, only required if type = upload
+
+    DocumentBase:
+      type: object
+      required: [ name ]
+      properties:
+        name:
+          type: string
+          description: Free text name of the document, can be different to the file name.
+        date:
+          type: string
+          format: date
+          description: A date for the document, e.g. the date an email was received.
+        categories:
+          type: array
+          items: 
+            type: string
+          description: Optional list of categories to organize the document.
+
+    DocumentCreate:
+      allOf:
+      - $ref: '#/components/schemas/DocumentBase'
+      - type: object
+        required: [ source ]
+        properties:
+          source:
+            $ref: '#/components/schemas/DocumentSource'
+
+    Document:
+      allOf:
+      - $ref: '#/components/schemas/DocumentBase'
+      - type: object
+        required: [id, number, created, type ]
+        properties:
+          id:
+            type: string
+            format: uuid
+          number:
+            type: string
+            description: The user reference for the document.
+          created:
+            type: string
+            format: date-time
+          type:
+            type: string
+            enum: [ Unknown, Email, WordDocument, WordTemplate, RTF, PDF, ExcelDocument, ExcelTemplate, Custom ]
+            description: Type of document
+    
+    DocumentCategories:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: 
+            type: string
+
+    SearchResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResultGroup'
+
+    SearchResultType:
+      type: string
+      enum: [ party, activeClient, inactiveClient, openMatter, closedMatter, invoice, address, phone, email, taxNumber, bankAccountNumber ]
+            
+    SearchResultGroup:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/SearchResultType'
+        count:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResultItem'
+
+    SearchResultItem:
+      type: object
+      properties:
+        exactMatch:
+          type: boolean
+        partyId:
+          $ref: '#/components/schemas/ID'
+          nullable: true
+        clientId:
+          $ref: '#/components/schemas/ID'
+          nullable: true
+        matterId:
+          $ref: '#/components/schemas/ID'
+          nullable: true
+        text:
+          type: string
+        subText:
+          type: string
+        partyType:
+          $ref: '#/components/schemas/SystemPartyType'
+          nullable: true
+
+    SearchPartyResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchPartyResult'
+
+    SearchPartyResult:
+      type: object
+      description: Client searches in CMP now support finding client and matter by Account Number
+      properties:
+        partyId:
+          $ref: '#/components/schemas/ID'
+        clientId:
+          $ref: '#/components/schemas/ID'
+          nullable: true
+        name:
+          type: string
+        partyType:
+          $ref: '#/components/schemas/SystemPartyType'
+        clientNumber:
+          type: string
+        address:
+          type: string
+        active:
+          type: boolean
+          nullable: true
+        creditStopped:
+          type: boolean
+          nullable: true
+        cddRequired:
+          type: boolean
+        exactMatch:
+          type: boolean
+        matterId:
+          $ref: '#/components/schemas/ID'
+          nullable: true
+        matterName:
+          type: string
+        matterNumber:
+          type: integer
+          nullable: true
+        matterActive:
+          type: boolean
+          nullable: true
+        capturedActivity:
+          type: boolean
+          nullable: true
+          description: Indicates whether activity has been captured for this matter.
+
+    ID:
+      type: string
+      format: uuid
+
+  responses:
+
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    BadRequest:
+      description: Request validation failed, see body for details
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Deleted:
+      description: Resource successfully deleted
+
+paths:
+
+  #
+  # Firm
+  #
+
+  /firm:
+    get:
+      operationId: getFirm
+      summary: Law firm details
+      description: Get details of the law firm
+      tags: [Firm]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Firm'
+
+  #
+  # Party document categories
+  #
+
+  /parties/{partyId}/documents/categories:
+    get:
+      operationId: getPartyDocumentCategories
+      summary: Party document categories
+      description: Get document categories available when managing documents to a specific party
+      tags: [Document Categories]
+      parameters: 
+      - $ref: "#/components/parameters/partyId"
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentCategories'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Matter document categories
+  #
+
+  /matters/{matterId}/documents/categories:
+    get:
+      operationId: getMatterDocumentCategories
+      summary: Matter document categories
+      description: Get document categories available when managing documents to a specific matter
+      tags: [Document Categories]
+      parameters: 
+      - $ref: "#/components/parameters/matterId"
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentCategories'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Document upload
+  # 
+
+  /uploads:
+    post:
+      operationId: saveUploadTicket
+      summary: Create resource representing a file uploaded to a temporary staging area
+      description: |
+        Uploading a document into OLC's document library involves several steps
+        1. Create an upload "ticket" by posting to this endpoint with an empty body. 
+           An upload ID and URL will be returned (see Upload schema).
+        2. Upload the actual file to the provided URL by PUTing to the URL provided. 
+           In the request body, using multipart/form-data encoding, provide the file contents including 
+           filename and content-type. For example:
+
+           `curl -L -X PUT '{Upload URL}' -F 'file=@"{File Path}"'`
+        3. Finally, create a managed document using the upload ID at one of the following endpoints:
+           ``` 
+           POST /parties/{partyId}/documents
+           POST /matters/{matterId}/documents
+           ``` 
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      tags: [Documents]
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Upload'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /uploads/{uploadId}/conversions:
+    post:
+      operationId: convertUploadTicket
+      summary: Convert an uploaded file to another type
+      description: |
+        Can be used to convert an upload from one file format to another before
+        storing it in the document library. Creates a new upload from an existing one. 
+        Only supports certain conversions:
+        - HTML to PDF
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      - $ref: '#/components/parameters/uploadId'
+      tags: [Documents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Convert'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Upload'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Manage document at party level
+  #
+
+  /parties/{partyId}/documents:
+    post:
+      operationId: savePartyDocument
+      summary: Create a managed document at the party level
+      description: Manage a file into the OLC document library at the party level. The file must first be uploaded
+        to the /uploads endpoint.
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      - $ref: "#/components/parameters/partyId"
+      tags: [Documents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Manage document at matter level
+  #
+
+  /matters/{matterId}/documents:
+    post:
+      operationId: saveMatterDocument
+      summary: Create a managed document at the matter level
+      description: Manage a file into the OLC document library at the matter level. The file must first be uploaded
+        to the /uploads endpoint.
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      - $ref: "#/components/parameters/matterId"
+      tags: [Documents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Delete documents
+  #
+
+  /documents/{documentId}:
+    delete:
+      operationId: deleteDocument
+      summary: Delete a document
+      description: Delete a managed document from the OLC document library.
+      tags: [Documents]
+      parameters:
+      - $ref: '#/components/parameters/documentId'
+      responses: 
+        '204':
+          $ref: '#/components/responses/Deleted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # Utility
+  #
+
+  /ping:
+    get:
+      operationId: getPing
+      summary: Get liveness of API
+      description: Used to check API is live.
+      tags: [Status]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ping'
+        '403':
+          description: The user does not have permission to use the API.
+        '404':
+          description: The law firm is running a version of OLC that doesn't support the API.
+
+  #
+  # Fee Types & Sub Fee Types
+  #
+
+  /fee-types:
+    get:
+      operationId: getFeeTypes
+      summary: Get all fee types
+      description: Used to categorize areas of legal practice in matters and time recorded.
+      tags: [Codes]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeeType'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Judged Value Reasons
+  #
+
+  /judged-value-reasons:
+    get:
+      operationId: getJudgedValueReasons
+      summary: Get all judged value reason codes
+      description: Reasons why some time entries are recorded with a judged value.
+      tags: [Codes]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JudgedValueReason'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # WIP Codes
+  /wip-codes:
+    get:
+      operationId: getWipCodes
+      summary: Get all WIP codes
+      description: Used for detailed categorisation of work performed in a time entry.
+      tags: [Codes]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WipCode'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Rate Types
+  #
+
+  /rate-types:
+    get:
+      operationId: getRateTypes
+      summary: Get all billing rates
+      description: Rates determine the cost of time when billed.
+      tags: [Codes]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RateType'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Parties
+  #
+
+  /parties:
+    get:
+      operationId: getParties
+      summary: Get all parties
+      description: Parties are all the people and legal entities involved in legal matters.
+      tags: [Parties]
+      parameters:
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+        - name: updatedAfter
+          in: query
+          description: Get parties updated after the specified UTC time stamp.
+          schema:
+            type: string
+            format: date-time
+        - name: contactableBy
+          in: query
+          description: Filters parties by available contact details. Supports multiple values and boolean operations. See examples for details.
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [phone, email, address]
+          style: form
+          explode: true
+          examples:
+            single:
+              summary: Get parties with a phone number
+              description: GET /parties?contactableBy=phone
+            or:
+              summary: Get parties with a phone number or email address
+              description: GET /parties?contactableBy=phone,email
+            and:
+              summary: Get parties with a phone number and address
+              description: GET /parties?contactableBy=phone&contactableBy=address
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyPagedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /parties/{partyId}:
+    parameters:
+      - $ref: '#/components/parameters/partyId'
+    get:
+      operationId: getParty
+      summary: Get a party by ID
+      tags: [Parties]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Party'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # search
+  #
+
+  /search:
+    get:
+      operationId: getSearch
+      summary: Search over all parties, clients, matters, invoices, etc.
+      description: Perform a free-text search over OnePractice
+      tags: [ Search ]
+      parameters:
+      - $ref: '#/components/parameters/q'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Party search
+  #
+
+  /search/parties:
+    get:
+      operationId: getPartySearch
+      summary: Search over all clients and parties.
+      description: Perform a free-text search over parties & clients
+      tags: [ Search ]
+      parameters:
+      - $ref: '#/components/parameters/q'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchPartyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Party Related Contacts
+  #
+
+  /parties/related-contacts:
+    get:
+      operationId: getPartyRelatedContacts
+      summary: Get parties related to other parties.
+      description: Provide a list of party IDs to receive a list of relationships with other parties.
+      tags: [Parties]
+      parameters:
+      - $ref: '#/components/parameters/relatedContactPartyId'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelatedContactResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Party Notes
+  #
+
+  /parties/{partyId}/notes:
+    parameters:
+      - $ref: '#/components/parameters/partyId'
+    get:
+      operationId: getPartyNotes
+      summary: Get all notes on a party
+      description: Text note recorded against a party, can also have a warning flag.
+      tags: [Party Notes]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Note'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      operationId: savePartyNote
+      summary: Create a note on a party
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      tags: [Party Notes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /parties/{partyId}/notes/{noteId}:
+    get:
+      operationId: getPartyNote
+      summary: Get a party note by ID
+      tags: [Party Notes]
+      parameters:
+        - $ref: '#/components/parameters/partyId'
+        - $ref: '#/components/parameters/noteId'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      operationId: updatePartyNote
+      summary: Update an existing party note
+      tags: [Party Notes]
+      parameters:
+      - $ref: '#/components/parameters/partyId'
+      - $ref: '#/components/parameters/noteId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteCreate'
+      responses: 
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # Clients
+  #
+
+  /clients:
+    get:
+      summary: Get all clients
+      operationId: getClients
+      description: Parties that have the Client role and therefore also matters with the law firm.
+      tags: [Clients]
+      parameters:
+        - name: deactivatedAfter
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientPagedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+            
+  /clients/{clientId}:
+    parameters:
+      - $ref: '#/components/parameters/clientId'
+    get:
+      operationId: getClient
+      summary: Get a client by ID
+      tags: [Clients]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # Matters
+  #
+
+  /clients/{clientId}/matters:
+    parameters:
+      - $ref: '#/components/parameters/clientId'
+      - $ref: '#/components/parameters/active'
+    get:
+      operationId: getMattersByClient
+      summary: Get all matters for a client
+      tags: [Matters]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Matter'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /matters/{matterId}:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
+    get:
+      operationId: getMatter
+      summary: Get a matter by ID
+      tags: [Matters]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Matter'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /matters/{matterId}/notes:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
+    get:
+      operationId: getMatterNotes
+      summary: Get all notes for a matter
+      tags: [Matter Notes]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Note'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      operationId: saveMatterNote
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      summary: Create a note for a matter
+      tags: [Matter Notes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /matters/{matterId}/notes/{noteId}:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
+      - $ref: '#/components/parameters/noteId'
+    get:
+      operationId: getMatterNote
+      summary: Get a note by ID
+      tags: [Matter Notes]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      operationId: updateMatterNote
+      summary: Update an existing note
+      tags: [Matter Notes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteCreate'
+      responses: 
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: deleteMatterNote
+      summary: Delete a matter note
+      tags: [Matter Notes]
+      responses:
+        '204':
+          $ref: '#/components/responses/Deleted'
+        '404':
+          $ref: '#/components/responses/NotFound'
+      
+  #        
+  # Users
+  #
+
+  /users:
+    get:
+      operationId: getUsers
+      summary: Get all users
+      tags: [Users]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Time Recording
+  #
+
+  /matters/{matterId}/time-entries:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
+    get:
+      operationId: getTimeByMatter
+      summary: Get all time entries for a matter
+      description: Regular time entries recorded on matters that will be billed.
+      tags: [Time Entries]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeEntry'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      operationId: saveTimeToMatter
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      summary: Add a time entry to a matter
+      tags: [Time Entries]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntry'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /matters/{matterId}/time-entries/{timeEntryId}:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
+      - $ref: '#/components/parameters/timeEntryId'
+    put:
+      operationId: updateMatterTime
+      summary: Update an existing time entry
+      tags: [ Time Entries ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeEntryCreate'
+      responses: 
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntry'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # Matter External Links
+  #
+
+  /matters/{matterId}/external-links:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
+    get:
+      operationId: getMatterExternalLinks
+      summary: Get all external links for a matter
+      description: Links between matters and workspaces in 3rd party web services
+      tags: [ Matter External Links ]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalLink'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      operationId: saveMatterExternalLink
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      summary: Link a matter to an external system.
+      tags: [ Matter External Links ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalLinkCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalLink'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # External Links - Canonical
+  #
+
+  /external-links/{externalLinkId}:
+    parameters:
+      - $ref: '#/components/parameters/externalLinkId'
+    get:
+      operationId: getExternalLink
+      summary: Get an existing external link
+      tags: [ External Links ]
+      responses: 
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalLink'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      operationId: updateExternalLink
+      summary: Update an existing external link
+      tags: [ External Links ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalLinkCreate'
+      responses: 
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalLink'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: deleteExternalLink
+      summary: Delete an external link
+      tags: [ External Links ]
+      responses: 
+        '204':
+          $ref: '#/components/responses/Deleted'
+        '404':
+          $ref: '#/components/responses/NotFound'

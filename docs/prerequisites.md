@@ -3,9 +3,9 @@
 ## Access model
 
 Access to the OneLaw Cloud API is available only to approved partners enrolled in the OneLaw Partnership Program.
-This program ensures that integrations meet OneLaw’s technical, security, and compliance standards, and that data is accessed only with appropriate authorization from participating law firms.
+This program ensures that integrations meet OneLaw's technical, security, and compliance standards, and that data is accessed only with appropriate authorization from participating law firms.
 
-To begin the enrollment process, please contact support@onelaw.co.nz.
+To begin the enrollment process, please contact <support@onelaw.co.nz>.
 Our team will guide you through the partnership onboarding steps and provide the information needed to begin development against the OneLaw Cloud API.
 
 ## Test tenant
@@ -29,7 +29,7 @@ Once a user has signed in, your application can exchange the authorization code 
 
 ## Enabling API access in the test tenant
 
-After you receive your test tenant credentials, you’ll need to enable API access in the OneLaw Practice Management application:
+After you receive your test tenant credentials, you'll need to enable API access in the OneLaw Practice Management application:
 
 - Open the OneLaw Practice Management app (Windows only).
 - Go to Administration → Integration.
@@ -42,3 +42,5 @@ When the Public API is enabled and your application is authorized, the tenant wi
 ## Next Steps
 
 [Authentication](authentication.md)
+
+[Home](index.md)

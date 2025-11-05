@@ -16,17 +16,17 @@ Instead, applications determine the correct base URL for a user or tenant by cal
 Integrators are provided with a test tenant within the OneLaw Cloud environment. This tenant is a fully functional sandbox where you can develop and test integrations without affecting production data.
 When an integration is ready, individual law firms can whitelist that integration in their own tenant, allowing the integration to access firm data through the firm’s dedicated API endpoint.
 
-## Versions and Changelog
+## Versioning
 
-Different versions of the OneLaw Cloud service correspond to specific versions of the OpenAPI specification. Each OpenAPI release documents the endpoints, schemas, and authentication models supported by that service version.
+Because each law firm runs its own dedicated instance of the OneLaw Cloud service, different firms may be running one of several recent versions. Each service version supports a specific OpenAPI specification, which defines the endpoints, schemas, and authentication models supported by that version.
 
-OneLaw Cloud Release | API Version (OpenAPI) | Notes
----------------------|-----------------------|------
-4.2.4                | v1.2.0                | Current release
-4.2.5                | v1.1.0                | Introduced Documents API
-4.3.0                | v1.0.0                | Initial public release
+OneLaw Cloud Release | API Version | Notes
+---------------------|-------------|------
+4.2.4                | [1.0.0](/spec/1.0.0/index.html) | Initial public release
+4.2.5                | [1.1.0](/spec/1.1.0/index.html)       | Added resources: firm & matter external links
+4.3.0                | [1.2.0](/spec/1.2.0/index.html)       | In development
 
-A full changelog will be maintained to record new endpoints, parameter additions, and deprecations. New versions are designed to be non-breaking whenever possible, and existing API versions remain supported for a defined period after deprecation.
+A full changelog will be maintained to record new endpoints, parameter additions, and deprecations. New versions are designed to be non-breaking whenever possible, and existing API versions remain supported for a defined period after deprecation. See [Release Notes](releasenotes.md) for more.
 
 ## Backward Compatibility Policy
 
@@ -36,7 +36,6 @@ The OneLaw Cloud API follows a semantic versioning model (MAJOR.MINOR.PATCH):
 - MINOR versions may introduce new endpoints, response fields, or optional parameters, but remain backward compatible.
 - MAJOR versions may include breaking changes.
 
-We use oasdiff to automatically detect and classify changes in the OpenAPI specification.
 Breaking changes include (but are not limited to):
 
 - Removing or renaming endpoints or paths
@@ -44,8 +43,10 @@ Breaking changes include (but are not limited to):
 - Altering response structure in a way that breaks existing clients
 - Modifying authentication or authorization requirements
 
-When a breaking change is necessary, it will be introduced in a new major version of the API, with prior versions supported during a deprecation window to give integrators time to upgrade.
+When a breaking change is necessary, it will be introduced in a new major version of the API with a new base URL, and with prior versions supported during a deprecation window to give integrators time to upgrade.
 
 ## Next Steps
 
 [Prerequisites](prerequisites.md)
+
+[Home](index.md)

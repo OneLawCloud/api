@@ -1,8 +1,16 @@
 
-## Reference (auto-generated)
+## Reference (DRAFT)
 
-Per-tag reference pages (as your spec already groups: Parties, Clients, Matters, Time Entries, Documents, Codes, Users, Search, etc.). 
-GitHub
+Full OpenAPI specifications are available.
 
-Schemas – linkable schema pages for objects used across endpoints (e.g., Party, Client, Matter, TimeEntry, Upload, Document, enums like NoteVisibility). 
-GitHub
+OneLaw Cloud | API Version | Notes
+---------------------|-------------|------
+4.2.4                | [1.0.0](/spec/1.0.0/index.html) | Initial public release
+4.2.5                | [1.1.0](/spec/1.1.0/index.html)       | Added resources: firm & matter external links
+4.3.0                | [1.2.0](/spec/1.2.0/index.html)       | In development
+
+## Next Steps
+
+[Security](security.md)
+
+[Home](index.md)
