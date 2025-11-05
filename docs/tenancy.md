@@ -53,4 +53,4 @@ The API will reject requests sent to the wrong tenant or without a valid token.
 
 [Using the API](usingtheapi.md)
 
-[Home](index.md)
+[Home](/index.md)

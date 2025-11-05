@@ -10,13 +10,13 @@ Built on RESTful principles and using OAuth 2.0 for authentication, the API expo
 
 This documentation introduces the API's structure, authentication model, and usage guidelines to help you integrate confidently and effectively with OneLaw Cloud.
 
-- [Introduction](introduction.md)
-- [Prerequisites](prerequisites.md)
-- [Authentication](authentication.md)
-- [Tenancy Model](tenancy.md)
-- [Using the API](usingtheapi.md)
-- [How-To](howto.md)
-- [Reference](reference.html)
-- [Security & Compliance](security.md)
-- [Testing & Tooling](testing.md)
-- [Support & Operations](support.md)
+- [Introduction](docs/introduction.md)
+- [Pre-requisites](docs/prerequisites.md)
+- [Authentication](docs/authentication.md)
+- [Tenancy Model](docs/tenancy.md)
+- [Using the API](docs/usingtheapi.md)
+- [How-To](docs/howto.md)
+- [Reference](docs/reference.html)
+- [Security & Compliance](docs/security.md)
+- [Testing & Tooling](docs/testing.md)
+- [Support & Operations](docs/support.md)

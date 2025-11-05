@@ -53,4 +53,4 @@ When a breaking change is necessary, it will be introduced in a new major versio
 
 [Prerequisites](prerequisites.md)
 
-[Home](index.md)
+[Home](/index.md)

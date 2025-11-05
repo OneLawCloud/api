@@ -135,4 +135,4 @@ Incorrect Content-Type | The token request must use application/x-www-form-urlen
 
 [Tenancy Model](tenancy.md)
 
-[Home](index.md)
+[Home](/index.md)

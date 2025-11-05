@@ -47,4 +47,4 @@ When the Public API is enabled and your application is authorized, the tenant wi
 
 [Authentication](authentication.md)
 
-[Home](index.md)
+[Home](/index.md)

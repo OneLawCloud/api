@@ -1,30 +1,18 @@
 title: OneLaw Cloud API
 email: support@onelaw.co.nz
 description: >-
-  Official documentation for the OneLaw Cloud API — providing developers with
-  comprehensive guides and reference material for integrating with OneLaw's
-  cloud-based legal practice management platform.
+  Official documentation for the OneLaw Cloud API.
 
 url: "https://www.onelaw.co.nz"
 
 theme: minima
 
 header_pages:
-- docs/index.md
 - docs/contact.md
 
-author:
-  name: OneLaw Support Team
-  email: support@onelaw.co.nz
+author: OneLaw Integration Team
 
 github_username: onelawcloud
 linkedin: company/onelaw-limited
 
-plugins:
-  - jekyll-feed
-  - jekyll-seo-tag
-
-markdown: kramdown
-kramdown:
-  input: GFM
 timezone: Pacific/Auckland
