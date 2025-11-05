@@ -4,6 +4,8 @@ permalink: /using-the-api/
 nav_order: 6
 ---
 
+# Using the API
+
 > ⚠️ **Draft:** This page is a work in progress and may change.
 
 Resource overview – a one-page map of major resources with short descriptions (Parties, Clients, Matters, Time Entries, Documents, Codes, Users, Search, Status). Tie each to a use case. 

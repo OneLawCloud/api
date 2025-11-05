@@ -1,7 +1,9 @@
 ---
-title: OneLaw Cloud
+title: OneLaw Cloud API
 nav_order: 1
 ---
+
+# OneLaw Cloud API
 
 > ⚠️ **Draft:** This page is a work in progress and may change.
 

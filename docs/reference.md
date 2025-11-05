@@ -1,6 +1,10 @@
 ---
 title: Reference
+permalink: /reference/
+nav_order: 8
 ---
+
+# Reference
 
 > ⚠️ **Draft:** This page is a work in progress and may change.
 

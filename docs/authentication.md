@@ -4,6 +4,8 @@ permalink: /authentication/
 nav_order: 4
 ---
 
+# Authentication
+
 > ⚠️ **Draft:** This page is a work in progress and may change.
 
 ## Overview

@@ -4,6 +4,8 @@ permalink: /tenancy-model/
 nav_order: 5
 ---
 
+# Tenancy Model
+
 > ⚠️ **Draft:** This page is a work in progress and may change.
 
 ## How tenant routing works

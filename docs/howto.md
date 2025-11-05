@@ -1,6 +1,10 @@
 ---
 title: How-To
+permalink: /how-to/
+nav_order: 7
 ---
+
+# How-To
 
 > ⚠️ **Draft:** This page is a work in progress and may change.
 

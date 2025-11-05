@@ -1,6 +1,10 @@
 ---
 title: Testing & Tooling
+permalink: /testing-and-tooling/
+nav_order: 10
 ---
+
+# Testing & Tooling
 
 > ⚠️ **Draft:** This page is a work in progress and may change.
 
