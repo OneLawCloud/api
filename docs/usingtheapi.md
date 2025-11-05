@@ -40,4 +40,4 @@ GitHub
 
 ## Next Steps
 
-[How-to](/how-to/)
+[How-to](/api/how-to/)
