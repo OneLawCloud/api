@@ -1,6 +1,6 @@
 ---
 title: OneLaw Cloud API
-nav_order: 1
+nav_exclude: true
 ---
 
 # OneLaw Cloud API
@@ -13,13 +13,6 @@ Built on RESTful principles and using OAuth 2.0 for authentication, the API expo
 
 This documentation introduces the API's structure, authentication model, and usage guidelines to help you integrate confidently and effectively with OneLaw Cloud.
 
-- [Introduction](docs/introduction.md)
-- [Pre-requisites](docs/prerequisites.md)
-- [Authentication](docs/authentication.md)
-- [Tenancy Model](docs/tenancy.md)
-- [Using the API](docs/usingtheapi.md)
-- [How-To](docs/howto.md)
-- [Reference](docs/reference.html)
-- [Security & Compliance](docs/security.md)
-- [Testing & Tooling](docs/testing.md)
-- [Support & Operations](docs/support.md)
+## Next Steps
+
+[Introduction](docs/introduction/)

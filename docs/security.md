@@ -12,3 +12,7 @@ Least privilege & scopes – recommended scope usage per feature.
 GitHub
 
 Data handling – PII considerations (Parties/Clients contain personal data), storage locations, and retention (high-level).
+
+## Next Steps
+
+[Testing and Tooling](docs/testing-and-tooling/)

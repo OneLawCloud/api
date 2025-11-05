@@ -37,3 +37,7 @@ Throttling/rate-limit errors (if applicable) and backoff guidance.
 
 Global/scoped search endpoints, required q param, examples for common queries. 
 GitHub
+
+## Next Steps
+
+[How-to](docs/how-to/)
