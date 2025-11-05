@@ -5,10 +5,7 @@ description: >-
 
 url: "https://www.onelaw.co.nz"
 
-theme: minima
-
-header_pages:
-- docs/contact.md
+remote_theme: just-the-docs/just-the-docs
 
 author: OneLaw Integration Team
 
@@ -16,3 +13,14 @@ github_username: onelawcloud
 linkedin: company/onelaw-limited
 
 timezone: Pacific/Auckland
+
+just_the_docs:
+# logo: "/assets/images/logo.png"
+# favicon_ico: "/assets/images/favicon.ico"
+  color_scheme: light
+  navigation_depth: 3
+  aux_links:
+    "OneLaw Website":
+      - "https://www.onelaw.co.nz"
+    "Support":
+      - "mailto:support@onelaw.co.nz"

@@ -1,5 +1,6 @@
 ---
 title: Tenancy Model
+permalink: /tenancy-model/
 ---
 
 > ⚠️ **Draft:** This page is a work in progress and may change.
@@ -52,5 +53,3 @@ The API will reject requests sent to the wrong tenant or without a valid token.
 ## Next Steps
 
 [Using the API](usingtheapi.md)
-
-[Home](/index.md)

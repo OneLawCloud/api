@@ -15,5 +15,3 @@ OneLaw Cloud | API Version                | Notes
 ## Next Steps
 
 [Security](security.md)
-
-[Home](/index.md)

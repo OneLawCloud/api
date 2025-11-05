@@ -1,0 +1,20 @@
+- title: Introduction
+  url: /introduction/
+- title: Pre-requisites
+  url: /pre-requisites/
+- title: Authentication
+  url: /authentication/
+- title: Tenancy Model
+  url: /tenancy-model/
+- title: Using the API
+  url: /using-the-api/
+- title: How-To
+  url: /how-to/
+- title: Reference
+  url: /reference/
+- title: Security & Compliance
+  url: /security-compliance/
+- title: Testing & Tooling
+  url: /testing-tooling/
+- title: Support & Operations
+  url: /support-operations/

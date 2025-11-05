@@ -1,5 +1,6 @@
 ---
 title: Introduction
+permalink: /introduction/
 ---
 
 > ⚠️ **Draft:** This page is a work in progress and may change.
@@ -51,6 +52,4 @@ When a breaking change is necessary, it will be introduced in a new major versio
 
 ## Next Steps
 
-[Prerequisites](prerequisites.md)
-
-[Home](/index.md)
+[Pre-requisites](prerequisites.md)

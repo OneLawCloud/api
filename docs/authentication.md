@@ -1,5 +1,6 @@
 ---
 title: Authentication
+permalink: /authentication/
 ---
 
 > ⚠️ **Draft:** This page is a work in progress and may change.
@@ -134,5 +135,3 @@ Incorrect Content-Type | The token request must use application/x-www-form-urlen
 ## Next Steps
 
 [Tenancy Model](tenancy.md)
-
-[Home](/index.md)

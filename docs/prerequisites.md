@@ -1,5 +1,6 @@
 ---
-title: Prerequisites
+title: Pre-requisites
+permalink: /pre-requisites/
 ---
 
 > ⚠️ **Draft:** This page is a work in progress and may change.
@@ -46,5 +47,3 @@ When the Public API is enabled and your application is authorized, the tenant wi
 ## Next Steps
 
 [Authentication](authentication.md)
-
-[Home](/index.md)
