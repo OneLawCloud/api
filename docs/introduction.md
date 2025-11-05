@@ -54,4 +54,4 @@ When a breaking change is necessary, it will be introduced in a new major versio
 
 ## Next Steps
 
-[Pre-requisites](/pre-requisites/)
+[Pre-requisites](/api/pre-requisites/)

@@ -49,4 +49,4 @@ When the Public API is enabled and your application is authorized, the tenant wi
 
 ## Next Steps
 
-[Authentication](/authentication/)
+[Authentication](/api/authentication/)

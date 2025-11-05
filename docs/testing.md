@@ -16,4 +16,4 @@ Mock server (optional) – if you provide an example mock via the spec.
 
 ## Next Steps
 
-[Support](docs/support/)
+[Support](/api/support/)

@@ -55,4 +55,4 @@ The API will reject requests sent to the wrong tenant or without a valid token.
 
 ## Next Steps
 
-[Using the API](/using-the-api/)
+[Using the API](/api/using-the-api/)

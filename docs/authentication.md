@@ -137,4 +137,4 @@ Incorrect Content-Type | The token request must use application/x-www-form-urlen
 
 ## Next Steps
 
-[Tenancy Model](/api/tenancy/)
+[Tenancy Model](/api/tenancy-model/)
