@@ -16,4 +16,3 @@ This documentation introduces the API's structure, authentication model, and usa
 - [Security & Compliance](security.md)
 - [Testing & Tooling](testing.md)
 - [Support & Operations](support.md)
-
