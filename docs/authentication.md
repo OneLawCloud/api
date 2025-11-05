@@ -1,6 +1,7 @@
 ---
 title: Authentication
 permalink: /authentication/
+nav_order: 4
 ---
 
 > ⚠️ **Draft:** This page is a work in progress and may change.

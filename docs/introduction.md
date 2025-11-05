@@ -1,6 +1,7 @@
 ---
 title: Introduction
 permalink: /introduction/
+nav_order: 2
 ---
 
 > ⚠️ **Draft:** This page is a work in progress and may change.

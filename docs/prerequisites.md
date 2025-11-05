@@ -1,6 +1,7 @@
 ---
 title: Pre-requisites
 permalink: /pre-requisites/
+nav_order: 3
 ---
 
 > ⚠️ **Draft:** This page is a work in progress and may change.

@@ -1,5 +1,7 @@
 ---
 title: Using the API
+permalink: /using-the-api/
+nav_order: 6
 ---
 
 > ⚠️ **Draft:** This page is a work in progress and may change.

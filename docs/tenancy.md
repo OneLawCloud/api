@@ -1,6 +1,7 @@
 ---
 title: Tenancy Model
 permalink: /tenancy-model/
+nav_order: 5
 ---
 
 > ⚠️ **Draft:** This page is a work in progress and may change.
