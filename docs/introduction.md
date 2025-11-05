@@ -3,7 +3,6 @@ title: Introduction
 permalink: /introduction/
 nav_order: 10
 ---
-
 # Introduction
 
 > ⚠️ **Draft:** This page is a work in progress and may change.
@@ -55,4 +54,4 @@ When a breaking change is necessary, it will be introduced in a new major versio
 
 ## Next Steps
 
-[Pre-requisites](/prerequisites/)
+[Pre-requisites](/pre-requisites/)

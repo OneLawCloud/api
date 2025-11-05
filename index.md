@@ -2,7 +2,6 @@
 title: OneLaw Cloud API
 nav_exclude: true
 ---
-
 # OneLaw Cloud API
 
 > ⚠️ **Draft:** This page is a work in progress and may change.
@@ -15,4 +14,4 @@ This documentation introduces the API's structure, authentication model, and usa
 
 ## Next Steps
 
-[Introduction](docs/introduction/)
+[Introduction](/api/introduction/)

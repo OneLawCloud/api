@@ -1,7 +1,7 @@
 ---
 title: Release Notes
 permalink: /release-notes/
-nav_order: 15
+nav_exclude: true
 ---
 
 # Release Notes

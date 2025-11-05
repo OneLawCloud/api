@@ -29,4 +29,4 @@ GitHub
 
 ## Next Steps
 
-[Reference](/reference/)
+[Reference](/api/reference/)
