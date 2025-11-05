@@ -1,4 +1,4 @@
-## Security & compliance
+## Security & compliance (DRAFT)
 
 Least privilege & scopes – recommended scope usage per feature. 
 GitHub
