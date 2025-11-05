@@ -1,7 +1,7 @@
 ---
 title: Introduction
 permalink: /introduction/
-nav_order: 2
+nav_order: 10
 ---
 
 # Introduction
@@ -55,4 +55,4 @@ When a breaking change is necessary, it will be introduced in a new major versio
 
 ## Next Steps
 
-[Pre-requisites](prerequisites.md)
+[Pre-requisites](/prerequisites/)

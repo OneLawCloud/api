@@ -1,7 +1,7 @@
 ---
 title: Using the API
 permalink: /using-the-api/
-nav_order: 6
+nav_order: 50
 ---
 
 # Using the API
@@ -40,4 +40,4 @@ GitHub
 
 ## Next Steps
 
-[How-to](docs/how-to/)
+[How-to](/how-to/)

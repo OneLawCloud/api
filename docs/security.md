@@ -1,7 +1,7 @@
 ---
 title: Security & Compliance
 permalink: /security-and-compliance/
-nav_order: 9
+nav_order: 80
 ---
 
 # Security & Compliance
@@ -15,4 +15,4 @@ Data handling – PII considerations (Parties/Clients contain personal data), st
 
 ## Next Steps
 
-[Testing and Tooling](docs/testing-and-tooling/)
+[Testing and Tooling](testing-and-tooling/)

@@ -1,7 +1,7 @@
 ---
 title: Support
 permalink: /support/
-nav_order: 11
+nav_order: 100
 ---
 
 # Support

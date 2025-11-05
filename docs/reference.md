@@ -1,7 +1,7 @@
 ---
 title: Reference
 permalink: /reference/
-nav_order: 8
+nav_order: 70
 ---
 
 # Reference
@@ -18,4 +18,4 @@ OneLaw Cloud | API Version                | Notes
 
 ## Next Steps
 
-[Security](security.md)
+[Security](/security-and-compliance/)

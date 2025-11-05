@@ -1,7 +1,7 @@
 ---
 title: How-To
 permalink: /how-to/
-nav_order: 7
+nav_order: 60
 ---
 
 # How-To
@@ -29,4 +29,4 @@ GitHub
 
 ## Next Steps
 
-[Reference](docs/reference/)
+[Reference](/reference/)

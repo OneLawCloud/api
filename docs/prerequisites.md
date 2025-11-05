@@ -1,6 +1,7 @@
 ---
 title: Pre-requisites
 permalink: /pre-requisites/
+nav_order: 20
 ---
 
 # Pre-requisites
@@ -48,4 +49,4 @@ When the Public API is enabled and your application is authorized, the tenant wi
 
 ## Next Steps
 
-[Authentication](authentication.md)
+[Authentication](/authentication/)

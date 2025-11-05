@@ -1,7 +1,7 @@
 ---
 title: Tenancy Model
 permalink: /tenancy-model/
-nav_order: 5
+nav_order: 40
 ---
 
 # Tenancy Model
@@ -55,4 +55,4 @@ The API will reject requests sent to the wrong tenant or without a valid token.
 
 ## Next Steps
 
-[Using the API](usingtheapi.md)
+[Using the API](/using-the-api/)

@@ -1,7 +1,7 @@
 ---
 title: Authentication
 permalink: /authentication/
-nav_order: 4
+nav_order: 30
 ---
 
 # Authentication
@@ -137,4 +137,4 @@ Incorrect Content-Type | The token request must use application/x-www-form-urlen
 
 ## Next Steps
 
-[Tenancy Model](tenancy.md)
+[Tenancy Model](/tenancy/)
