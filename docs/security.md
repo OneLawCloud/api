@@ -1,4 +1,8 @@
-## Security & compliance (DRAFT)
+---
+title: Security & Compliance
+---
+
+> ⚠️ **Draft:** This page is a work in progress and may change.
 
 Least privilege & scopes – recommended scope usage per feature. 
 GitHub

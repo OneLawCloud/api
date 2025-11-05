@@ -1,4 +1,8 @@
-# How-To (DRAFT)
+---
+title: How-To
+---
+
+> ⚠️ **Draft:** This page is a work in progress and may change.
 
 Find a client and their matters – Parties → Clients → Matters flow.
 

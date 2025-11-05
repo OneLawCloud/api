@@ -1,5 +1,8 @@
+---
+title: Reference
+---
 
-## Reference (DRAFT)
+> ⚠️ **Draft:** This page is a work in progress and may change.
 
 Full OpenAPI specifications are available.
 

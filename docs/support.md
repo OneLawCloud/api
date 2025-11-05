@@ -1,4 +1,8 @@
-## Support & operations (DRAFT)
+---
+title: Support
+---
+
+> ⚠️ **Draft:** This page is a work in progress and may change.
 
 Support & SLAs – where to get help; response expectations.
 

@@ -1,4 +1,8 @@
-# Authentication (DRAFT)
+---
+title: Authentication
+---
+
+> ⚠️ **Draft:** This page is a work in progress and may change.
 
 ## Overview
 

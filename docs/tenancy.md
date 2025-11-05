@@ -1,4 +1,8 @@
-# Tenancy Model (DRAFT)
+---
+title: Tenancy Model
+---
+
+> ⚠️ **Draft:** This page is a work in progress and may change.
 
 ## How tenant routing works
 

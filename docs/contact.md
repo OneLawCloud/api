@@ -1,9 +1,6 @@
 ---
 title: Contact
-permalink: /contact/
 ---
-
-# Contact Us
 
 If you need assistance with OneLaw Cloud API or have a question about our products and services, we’d love to hear from you.
 

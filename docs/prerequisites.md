@@ -1,4 +1,8 @@
-# Prerequisites (DRAFT)
+---
+title: Prerequisites
+---
+
+> ⚠️ **Draft:** This page is a work in progress and may change.
 
 ## Access model
 
