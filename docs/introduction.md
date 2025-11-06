@@ -11,14 +11,14 @@ The OneLaw Cloud API provides programmatic access to the OneLaw Cloud legal prac
 
 The API is intended for developers building software that integrates with OneLaw Cloud: for example, legal service automation tools, document generation platforms, time-tracking integrations, or client relationship management systems. Access is available only under a partnership agreement, ensuring that all integrations meet OneLaw’s data protection and compliance standards.
 
-## Environments and Base URLs
+## Environments
 
 OneLaw Cloud is a single-tenanted system: each law firm has its own isolated service instance, including its own API endpoint.
 There is no single global base URL for the OneLaw Cloud API.
 
 Instead, applications determine the correct base URL for a user or tenant by calling a configuration service. After obtaining an access token through OAuth 2.0, the client calls this configuration endpoint, which returns the base URL for the tenant’s API. All subsequent API requests must be directed to that URL.
 
-## Test tenant
+## Test Tenant
 
 Integrators are provided with a test tenant within the OneLaw Cloud environment. This tenant is a fully functional sandbox where you can develop and test integrations without affecting production data.
 When an integration is ready, individual law firms can whitelist that integration in their own tenant, allowing the integration to access firm data through the firm’s dedicated API endpoint.
@@ -35,7 +35,7 @@ OneLaw Cloud | API Version                | Notes
 
 A full changelog will be maintained to record new endpoints, parameter additions, and deprecations. New versions are designed to be non-breaking whenever possible, and existing API versions remain supported for a defined period after deprecation. See [Release Notes](releasenotes.md) for more.
 
-## Backward Compatibility Policy
+## Backward Compatibility
 
 The OneLaw Cloud API follows a semantic versioning model (MAJOR.MINOR.PATCH):
 
@@ -54,4 +54,4 @@ When a breaking change is necessary, it will be introduced in a new major versio
 
 ## Next Steps
 
-[Pre-requisites](/api/pre-requisites/)
+[Prerequisites](/api/prerequisites/)

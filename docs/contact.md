@@ -1,7 +1,7 @@
 ---
 title: Contact
 permalink: /contact/
-
+nav_order: 110
 ---
 
 # Contact Us
