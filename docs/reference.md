@@ -8,7 +8,7 @@ nav_order: 70
 
 > ⚠️ **Draft:** This page is a work in progress and may change.
 
-Full OpenAPI specifications are available.
+Full OpenAPI specifications are available in OpenAPI (Swagger) format at the links below.
 
 OneLaw Cloud | API Version                | Notes
 -------------|----------------------------|------

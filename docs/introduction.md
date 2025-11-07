@@ -25,12 +25,12 @@ When an integration is ready, individual law firms can whitelist that integratio
 
 ## Versioning
 
-Because each law firm runs its own dedicated instance of the OneLaw Cloud service, different firms may be running one of several recent versions. Each service version supports a specific OpenAPI specification, which defines the endpoints, schemas, and authentication models supported by that version.
+Because each law firm runs its own dedicated instance of the OneLaw Cloud service, different firms may be running one of several recent service versions. Each service version supports a specific OpenAPI specification, which defines the endpoints, schemas, and authentication models supported by that version.
 
-OneLaw Cloud | API Version                | Notes
--------------|----------------------------|------
-4.2.4        | [1.0.0](/api/specs/1.0.0/) | Initial public release
-4.2.5        | [1.1.0](/api/specs/1.1.0/) | Added resources: firm & matter external links
+OneLaw Cloud Service Version | API Version  | Notes
+-------------|------------------------------|------
+4.2.4        | [1.0.0](/api/specs/1.0.0/)   | Initial public release
+4.2.5        | [1.1.0](/api/specs/1.1.0/)   | Added resources: firm & matter external links
 4.3.0        | [Latest](/api/specs/latest/) | In development
 
 A full changelog will be maintained to record new endpoints, parameter additions, and deprecations. New versions are designed to be non-breaking whenever possible, and existing API versions remain supported for a defined period after deprecation. See [Release Notes](releasenotes.md) for more.
@@ -41,6 +41,8 @@ The OneLaw Cloud API follows a semantic versioning model (MAJOR.MINOR.PATCH):
 
 - PATCH versions include non-breaking bug fixes or clarifications in documentation.
 - MINOR versions may introduce new endpoints, response fields, or optional parameters, but remain backward compatible.
+  
+  Integrators are expected to **ignore any new fields that appear in responses** to ensure compatibility with future versions.
 - MAJOR versions may include breaking changes.
 
 Breaking changes include (but are not limited to):

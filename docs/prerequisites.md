@@ -30,23 +30,37 @@ Your test tenant allows you to:
 
 Our team will set up this environment for you and provide the necessary connection details once provisioning is complete.
 
-## Credentials
+### First-Time Use
 
-You will also receive a Client ID and Client Secret. These credentials are used to initiate OAuth 2.0 Authorization Code Flow sign-ins for users.
-Once a user has signed in, your application can exchange the authorization code for an access token, which grants secure, scoped access to the API on behalf of that user.
+You will manage your test tenant using the OneLaw Practice Management app.
+The app requires a Windows 10 or later PC with a Full HD (FHD) screen resolution and an internet connection.
 
-## Enabling API Access
+1. Download and run the installer from the URL provided.  
+2. Launch the OneLaw app from the Start menu.  
+3. Click Login.  
+4. Enter your email address and select Forgot Password.  
+5. Complete email verification and set a password.  
+6. Set up mandatory two-factor authentication (2FA).  
+7. The OneLaw Practice Management app will load.
 
-After you receive your test tenant credentials, you'll need to enable API access in the OneLaw Practice Management application:
+### Enabling API Access
 
-- Open the OneLaw Practice Management app (Windows only).
-- Go to Administration → Integration.
-- Turn on the Public API setting
+After logging in to the OneLaw app, you must enable API access before using it:
+
+1. Open the OneLaw Practice Management app (Windows only).  
+2. Go to Administration → Integration.  
+3. Turn on the Public API setting.  
 
 Add an Authorized App using the Client ID assigned to you by OneLaw.
 
 When the Public API is enabled and your application is authorized, the tenant will begin accepting authenticated API requests from your integration.
 
+## OAuth Credentials
+
+You will receive a Client ID and Client Secret. These credentials are used to initiate OAuth 2.0 Authorization Code Flow sign-ins for users.  
+After a user signs in, your application exchanges the authorization code for an access token, which grants secure, scoped access to the API on behalf of that user.
+
+> 🔒 **Note:** Store the Client Secret securely and never embed it in public or client-side code. Treat these credentials as confidential.
 ## Next Steps
 
 [Authentication](/api/authentication/)

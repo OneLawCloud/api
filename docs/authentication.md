@@ -24,7 +24,7 @@ Endpoint Type | URL
 Authorization URL | https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/B2C_1_si_api/oauth2/v2.0/authorize
 Token URL | https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/B2C_1_si_api/oauth2/v2.0/token
 
-(These URLs are also published in the OpenAPI specification.)
+(These URLs are also published in the OpenAPI specification)
 
 ## Scopes
 
@@ -134,6 +134,7 @@ Missing or incorrect scopes | If you omit access_as_user, the API will reject re
 Using an expired access token | Refresh tokens before expiry; don't reuse expired access tokens.
 Calling the API before discovering the base URL | Always use the configuration service to obtain the tenant's API base URL before making API calls.
 Incorrect Content-Type | The token request must use application/x-www-form-urlencoded, not JSON.
+API Disabled | Each OneLaw Cloud tenant (law firm) you connect to must have the API enabled and your Client Application whitelisted for your requests to be accepted.
 
 ## Next Steps
 
