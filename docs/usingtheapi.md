@@ -13,6 +13,38 @@ You’ll need an access token to authenticate (see [Authentication](/api/authent
 ).
 This page covers common patterns such as pagination, filtering, and error responses.
 
+## Parties, Clients & Users
+
+The OneLaw Cloud Service models all entities — people, companies, trusts, partnerships, couples, and so on — as Parties.
+
+In addition to standard details such as names and addresses, each Party has a type and may have one or more roles.
+
+### Party Types
+
+Every Party has exactly one Party Type, made up of two components: a System Party Type and a Party Type Name.
+
+#### System Party Type
+
+This is a system-defined enumeration that classifies every Party into exactly one of the following categories:
+
+1. Natural Parties – individuals or people
+2. Legal Parties – companies or organizations
+3. Multi Parties – entities such as trusts, partnerships, or couples
+
+#### Party Type Name
+
+This is a user-editable text field that law firms can customize to reflect the specific types of parties they interact with — for example, Company, Individual – NZ Resident, or Couple.
+
+### Party Roles
+
+Parties can participate in one or more Party Roles, depending on their relationship with the law firm.
+
+Role | Description
+-----|------------
+None | Many parties have no defined roles — for example, counterparties on matters or billing contacts.
+Client | Parties who are clients of the law firm hold this role, which grants them access to legal matters, time recording, billing, and related functions.
+User | Law firm staff members are also represented as Parties, each with a User role. Some Users may also be Clients.
+
 ## Dates & Times
 
 Most date and time values in the API represent **timestamps** — specific points in time — and are provided in **UTC** using the [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (e.g. `2025-11-07T03:45:00Z`).
@@ -148,7 +180,6 @@ All errors responses include a relevant HTTP status code and a standard JSON bod
   "message": ""
 }
 ```
-
 
 ## Request Limits and Usage Guidelines
 
