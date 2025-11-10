@@ -27,11 +27,11 @@ When an integration is ready, individual law firms can whitelist that integratio
 
 Because each law firm runs its own dedicated instance of the OneLaw Cloud service, different firms may be running one of several recent service versions. Each service version supports a specific OpenAPI specification, which defines the endpoints, schemas, and authentication models supported by that version.
 
-OneLaw Cloud Service Version | API Version  | Notes
--------------|------------------------------|------
-4.2.4        | [1.0.0](/api/specs/1.0.0/)   | Initial public release
-4.2.5        | [1.1.0](/api/specs/1.1.0/)   | Added resources: firm & matter external links
-4.3.0        | [Latest](/api/specs/latest/) | In development
+OneLaw Cloud | API Version                | Notes
+-------------|----------------------------|------
+4.2.4        | [1.0.0](/api/specs/1.0.0/) | Initial public release
+4.2.5        | [1.0.0](/api/specs/1.0.0/) | 
+4.3.0        | [1.1.0](/api/specs/1.1.0/) | In development
 
 A full changelog will be maintained to record new endpoints, parameter additions, and deprecations. New versions are designed to be non-breaking whenever possible, and existing API versions remain supported for a defined period after deprecation. See [Release Notes](releasenotes.md) for more.
 
