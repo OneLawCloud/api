@@ -1574,6 +1574,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Matter'
+        '400':
+          $ref: "#/components/responses/BadRequest"
         '404':
           $ref: '#/components/responses/NotFound'
 
