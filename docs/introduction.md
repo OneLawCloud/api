@@ -25,7 +25,7 @@ When an integration is ready, individual law firms can whitelist that integratio
 
 ## Versioning
 
-Because each law firm runs its own dedicated instance of the OneLaw Cloud service, different firms may be running one of several recent service versions. Each service version supports a specific OpenAPI specification, which defines the endpoints, schemas, and authentication models supported by that version.
+Because each law firm runs its own dedicated instance of the OneLaw Cloud Service, different firms may be running one of several recent service versions. Each service version supports a specific OpenAPI specification, which defines the endpoints, schemas, and authentication models supported by that version.
 
 OneLaw Cloud | API Version                | Notes
 -------------|----------------------------|------

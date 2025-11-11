@@ -37,13 +37,13 @@ This is a user-editable text field that law firms can customize to reflect the s
 
 ### Party Roles
 
-Parties can participate in one or more Party Roles, depending on their relationship with the law firm.
+Parties can have zero or more Party Roles, depending on their relationship with the law firm.
 
 Role | Description
 -----|------------
-None | Many parties have no defined roles — for example, counterparties on matters or billing contacts.
-Client | Parties who are clients of the law firm hold this role, which grants them access to legal matters, time recording, billing, and related functions.
-User | Law firm staff members are also represented as Parties, each with a User role. Some Users may also be Clients.
+None | Many parties have no roles and are essentially just a named contact - for example, counter-parties on matters or billing contacts.
+Client | Parties who are clients of the law firm have this role, which grants them access to legal matters, time recording, billing, and related functions.
+User | Law firm staff members are also represented as Parties, each with a User role.
 
 ## Dates & Times
 
@@ -189,4 +189,4 @@ We therefore recommend that integrators adopt a practically reasonable request c
 
 ## Next Steps
 
-[How-to](/api/how-to/)
+[How-To](/api/how-to/)

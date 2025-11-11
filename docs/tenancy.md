@@ -10,7 +10,7 @@ nav_order: 40
 
 ## Tenant Routing
 
-The OneLaw Cloud platform is single-tenanted — each law firm runs its own isolated instance of the OneLaw Cloud service, with its own data store and its own API endpoint.
+The OneLaw Cloud platform is single-tenanted — each law firm runs its own isolated instance of the OneLaw Cloud Service, with its own data store and its own API endpoint.
 As a result, there is no single global API base URL. Every request must be sent to the base URL belonging to the firm whose data you are accessing.
 
 To determine the correct base URL, your integration must first:
@@ -55,4 +55,4 @@ The API will reject requests sent to the wrong tenant or without a valid token.
 
 ## Next Steps
 
-[Using the API](/api/using-the-api/)
+[Data Model](/api/data-model/)

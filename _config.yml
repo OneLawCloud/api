@@ -15,8 +15,8 @@ linkedin: company/onelaw-limited
 timezone: Pacific/Auckland
 
 just_the_docs:
-# logo: "/assets/images/logo.png"
-# favicon_ico: "/assets/images/favicon.ico"
+  logo: "assets/images/onelaw.png"
+  favicon_ico: "assets/images/favicon.avif"
   color_scheme: light
   navigation_depth: 3
   aux_links:

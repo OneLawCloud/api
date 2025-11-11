@@ -108,11 +108,11 @@ If the token is valid, the API will return data for the signed-in user's firm.
 
 ### Token Lifetime and Refresh
 
-Access tokens are short-lived (typically 1 hour).
+Access tokens are valid for 1 hour.
 
-Refresh tokens remain valid for a longer period (typically 14 days, subject to user activity).
+Refresh tokens expire after 14 days of inactivity. With a no-expiry sliding window, refresh tokens can be renewed indefinitely as long as they are used at least once every 14 days.
 
-When your app receives an invalid_token or HTTP 401 response, or when the access token nears expiry, request a new one using the refresh token:
+When your app receives an invalid_token/HTTP 401 or the access token nears expiry, request a new access token using the refresh token.
 
 ```
 curl -X POST https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/B2C_1_si_api/oauth2/v2.0/token \
