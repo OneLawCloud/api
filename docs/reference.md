@@ -18,4 +18,4 @@ OneLaw Cloud | API Version                | Notes
 
 ## Next Steps
 
-[Security](/api/support/)
+[Security](/api/contact/)

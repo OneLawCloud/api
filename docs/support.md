@@ -2,6 +2,7 @@
 title: Support
 permalink: /support/
 nav_order: 100
+nav_exclude: true
 ---
 
 # Support
