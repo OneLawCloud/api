@@ -44,7 +44,7 @@ Pagination results are always provided in the following structure:
 }
 ```
 
-**total** is the total number of items that are available given the current filter parmeters. 
+**total** is the total number of items that are available given the current filter parameters. 
 
 **lastUpdated** is the most recent updated date of all the items in the filtered results. If the lastUpdated date changes between paging requests, then the collection has changed and you may want to start paging over again from the beginning.
 
@@ -66,7 +66,7 @@ GET /parties?contactableBy=phone,email
 
 ## Party Sync
 
-The parties endpoint supports bulk data syncronization via an initial full, paged data load followed by repeated incremental loads.
+The parties endpoint supports bulk data synchronization via an initial full, paged data load followed by repeated incremental loads.
 
 **Example:** full data load
 

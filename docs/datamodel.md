@@ -40,6 +40,20 @@ None | Many parties have no roles and are essentially just a named contact - for
 Client | Parties who are clients of the law firm have this role, which grants them access to legal matters, time recording, billing, and related functions.
 User | Law firm staff members are also represented as Parties, each with a User role.
 
+## Time Entries
+
+Time entries record billable or non-billable time worked on legal matters by users.
+
+### Time Increments
+
+Time entries are always expressed in **minutes** and must start and stop at times that align with **6-minute increments from the start of each hour**.
+
+Valid start and stop times are, e.g.:
+- 00:00, 00:06, 00:12, 00:18, 00:24, 00:30, 00:36, 00:42, 00:48, 00:54
+- And so on for each hour...
+
+This means time entries must begin and end at one of these 6-minute boundaries (every 0.1 hours). Any time entry that does not align with these boundaries will be rejected with a validation error.
+
 ## Next Steps
 
 [Using the API](/api/using-the-api/)

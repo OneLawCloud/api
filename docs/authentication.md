@@ -46,7 +46,7 @@ scope=https://onepracticecloud.onmicrosoft.com/olc-api/access_as_user openid off
 
 When your app exchanges an authorization code, the token endpoint returns:
 
-- access_token – used in the "Authorization: Bearer < token >" header for all API calls.
+- access_token – used in the "Authorization: Bearer {YOUR_ACCESS_TOKEN}" header for all API calls.
 - refresh_token – used to obtain a new access token without user interaction.
 - id_token – (optional) an identity token containing standard OpenID Connect claims.
 
