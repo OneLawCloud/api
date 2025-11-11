@@ -2,6 +2,7 @@
 title: Testing & Tooling
 permalink: /testing-and-tooling/
 nav_order: 90
+nav_exclude: true
 ---
 
 # Testing & Tooling

@@ -15,10 +15,10 @@ This page covers common patterns such as pagination, filtering, and error respon
 
 ## Dates & Times
 
-Most date and time values in the API represent **timestamps** — specific points in time — and are provided in **UTC** using the [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (e.g. `2025-11-07T03:45:00Z`).
+Most date and time values in the API represent timestamps — specific points in time — and are provided in UTC using the [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (e.g. `2025-11-07T03:45:00Z`).
 
-However, some fields represent **calendar dates** rather than precise timestamps (for example, a due date or a document date).  
-These values are stored and returned **exactly as entered**, in **local date/time format**, and **should not be interpreted as UTC timestamps**.
+However, some fields represent calendar dates rather than precise timestamps (for example, a due date or a document date).  
+These values are stored and returned exactly as entered, in local date/time format, and should not be interpreted as UTC timestamps.
 
 ## Pagination & Filtering
 
@@ -38,7 +38,7 @@ Pagination results are always provided in the following structure:
 
 ``` json
 {
-    "items": [ /* items */ ],
+    "items": [ ... ],
     "total": 99,
     "lastUpdated": "2025-01-01T00:00:00Z"
 }
@@ -53,7 +53,7 @@ Pagination results are always provided in the following structure:
 Many endpoints support filtering on specific fields (see individual endpoint docs). In some cases boolean
 operations are available.
 
-**Example:** get parties that have a phone and an email address
+**Example:** get parties that have a phone **and** an email address
 ```
 GET /parties?contactableBy=phone&contactableBy=address
 ```

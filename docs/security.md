@@ -2,6 +2,7 @@
 title: Security & Compliance
 permalink: /security-and-compliance/
 nav_order: 80
+nav_exclude: true
 ---
 
 # Security & Compliance
