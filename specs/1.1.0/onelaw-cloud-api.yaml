@@ -553,6 +553,11 @@ components:
             judged:
               type: boolean
               description: Whether or not the value of the time entry was judged.
+            timeRateId:
+              type: string
+              format: uuid
+              nullable: true
+              description: The ID of the rate used to bill this time, or null for value WIP
 
     WipCode:
       type: object
