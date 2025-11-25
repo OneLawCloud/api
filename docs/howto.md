@@ -12,7 +12,7 @@ nav_order: 60
 
 Before making any API calls, you should confirm that the API is supported and reachable for the signed-in user's tenant.
 
-Once you have a signed-in user and the base URL from the config service, send a GET request to the /ping endpoint:
+Once you have a signed-in user and the base URL from the config service, send a request to the `GET /ping` endpoint:
 
 ```
 GET https://firm123.api.onelaw.cloud/v1/ping
@@ -46,7 +46,7 @@ Uploading a document involves four distinct steps:
 
 1. Request an Upload Ticket
 
-    Begin by calling GET /uploads/ticket.
+    Begin by calling `GET /uploads/ticket`.
     The response includes a pre-signed upload URL and an upload ID. These allow your client application to securely upload the binary file directly to cloud storage without routing the data through the OneLaw API servers.
 
 2. Upload the File
@@ -72,27 +72,24 @@ Uploading a document involves four distinct steps:
 
     In the request body, include:
 
-    The uploadId from step 1
-
-    Metadata such as document name, type, and description
+    - The uploadId from step 1
+    - Metadata such as document name, type, and description
 
     This final step registers the document within the OneLaw Document Management System (DMS), making it searchable, retrievable, and accessible through the relevant Matter or Party record.
 
 ### Notes
 
-The upload ticket and pre-signed URL are time-limited and should be used promptly.
-
-The uploaded file is not visible within the DMS until the final POST request is made.
-
-Additional conversion formats may be supported in future releases.
+- The upload ticket and pre-signed URL are time-limited and should be used promptly.
+- The uploaded file is not visible within the DMS until the final POST request is made.
+- Additional conversion formats may be supported in future releases.
 
 ## Linking Matters to Your Workspace
 
 External links allow integrators to create connections between OneLaw matters and workspaces in external systems. These links appear within the OneLaw application, displaying a URL and optional status indicator that users can click to navigate directly to the integrator's workspace.
 
 To create an external link, use `POST /matters/{matterId}/external-links` with a request body containing:
-- `url`: The web address of your workspace (required)
-- `status`: A vendor-specific status indicator (optional)
+- URL: The web address of your workspace (required)
+- Status: A vendor-specific status indicator (optional)
 
 The response includes the created link with a unique ID and a `Location` header you can use for subsequent operations.
 
