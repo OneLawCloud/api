@@ -62,7 +62,7 @@ Uploading a document involves four distinct steps:
     Currently, the service supports converting HTML documents to PDF.
     This step is optional and may be skipped if no conversion is required.
 
-4. Store the Document in the DMS
+4. Store the Document in OneLaw
     
     Once the file (and any conversion) is complete, associate it with a specific record by posting to one of the following endpoints:
 
@@ -82,6 +82,21 @@ Uploading a document involves four distinct steps:
 - The upload ticket and pre-signed URL are time-limited and should be used promptly.
 - The uploaded file is not visible within the DMS until the final POST request is made.
 - Additional conversion formats may be supported in future releases.
+
+## Document Downloads
+
+The process for downloading documents is:
+
+1. Retrieve a document listing from a party or matter (`GET /parties/{partyId}/documents`).
+2. Read the `contentUrl` from the document object you want to download.
+3. Perform a simple `GET` request to that URL and include the standard `Authorization` header
+4. The response will contain:
+    - The raw bytes of the file in the response body  
+    - A `Content-Type` header (e.g., `application/pdf`)  
+    - A `Content-Disposition` header specifying the recommended filename  
+
+Integrators should treat the `contentUrl` field as opaque and must not construct or modify download URLs.
+Always use the exact URL returned with each document. The URL may change over time, may include query parameters or signatures, and may be time-limited. The response may include HTTP redirects, which you should follow automatically.
 
 ## Linking Matters to Your Workspace
 
