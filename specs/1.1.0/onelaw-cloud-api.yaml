@@ -756,7 +756,13 @@ components:
             format: uuid
           number:
             type: string
-            description: The user reference for the document.
+            description: The user reference for the document
+          fileName:
+            type: string
+            description: The file name extension of the document
+          mimeType:
+            type: string
+            description: The MIME type for the file if known
           created:
             type: string
             format: date-time
@@ -764,7 +770,23 @@ components:
             type: string
             enum: [ Unknown, Email, WordDocument, WordTemplate, RTF, PDF, ExcelDocument, ExcelTemplate, Custom ]
             description: Type of document
-    
+          contentUrl:
+            type: string
+            format: uri
+            readOnly: true
+            description: >
+              URL that can be used to download the file contents for this document.
+              Clients MUST treat this URL as opaque and MUST NOT construct it
+              themselves. Its value may change over time.
+
+    DocumentResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+
     DocumentCategories:
       type: object
       required: [items]
@@ -1021,6 +1043,22 @@ paths:
   #
 
   /parties/{partyId}/documents:
+    get:
+      operationId: getPartyDocuments
+      summary: Get party documents
+      description: Get all documents managed at the party level.
+      tags: [Documents]
+      parameters: 
+      - $ref: "#/components/parameters/partyId"
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
     post:
       operationId: savePartyDocument
       summary: Create a managed document at the party level
@@ -1057,6 +1095,22 @@ paths:
   #
 
   /matters/{matterId}/documents:
+    get:
+      operationId: getMatterDocuments
+      summary: Get matter documents
+      description: Get all documents managed at the matter level.
+      tags: [Documents]
+      parameters: 
+      - $ref: "#/components/parameters/matterId"
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
     post:
       operationId: saveMatterDocument
       summary: Create a managed document at the matter level
