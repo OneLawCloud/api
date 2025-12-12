@@ -31,8 +31,12 @@ tags:
   description: Billable or time recorded against legal matters by users
 - name: Document Categories
   description: Categories used to organise the document library
-- name: Documents
+- name: Document Uploads
+  description: Uploading files and managing them in the document library
+- name: Document Library
   description: Documents managed in a structured library
+- name: Document Versions
+  description: Tracking document changes over time
 - name: Search
   description: Global and scoped search endpoints
 - name: Users
@@ -787,6 +791,38 @@ components:
           items:
             $ref: '#/components/schemas/Document'
 
+    DocumentVersionCreate:
+      type: object
+      required: [ source ]
+      properties:
+        source:
+          $ref: '#/components/schemas/DocumentSource'
+        note:
+          type: string
+          description: A text note describing this version of the document
+
+    DocumentVersion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The public ID of this version of the document
+        number:
+          type: string
+          description: The user reference for the document in the format "{doc number}.{doc version}"
+        note:
+          type: string
+          description: A text note describing this version of the document
+
+    DocumentVersionResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentVersion'
+
     DocumentCategories:
       type: object
       required: [items]
@@ -986,7 +1022,7 @@ paths:
            ``` 
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
-      tags: [Documents]
+      tags: [Document Uploads]
       responses:
         '201':
           description: Created
@@ -1015,7 +1051,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
       - $ref: '#/components/parameters/uploadId'
-      tags: [Documents]
+      tags: [Document Uploads]
       requestBody:
         required: true
         content:
@@ -1047,7 +1083,7 @@ paths:
       operationId: getPartyDocuments
       summary: Get party documents
       description: Get all documents managed at the party level.
-      tags: [Documents]
+      tags: [Document Library]
       parameters: 
       - $ref: "#/components/parameters/partyId"
       responses:
@@ -1067,7 +1103,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
       - $ref: "#/components/parameters/partyId"
-      tags: [Documents]
+      tags: [Document Uploads]
       requestBody:
         required: true
         content:
@@ -1099,7 +1135,7 @@ paths:
       operationId: getMatterDocuments
       summary: Get matter documents
       description: Get all documents managed at the matter level.
-      tags: [Documents]
+      tags: [Document Library]
       parameters: 
       - $ref: "#/components/parameters/matterId"
       responses:
@@ -1119,7 +1155,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
       - $ref: "#/components/parameters/matterId"
-      tags: [Documents]
+      tags: [Document Uploads]
       requestBody:
         required: true
         content:
@@ -1151,7 +1187,7 @@ paths:
       operationId: deleteDocument
       summary: Delete a document
       description: Delete a managed document from the OLC document library.
-      tags: [Documents]
+      tags: [Document Library]
       parameters:
       - $ref: '#/components/parameters/documentId'
       responses: 
@@ -1161,6 +1197,56 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+
+  #
+  # Document Versions
+  # 
+
+  /documents/{documentId}/versions: 
+    get:
+      operationId: getDocumentVersions
+      summary: Get documents versions
+      description: Get all versions of a document.
+      tags: [Document Versions]
+      parameters: 
+      - $ref: "#/components/parameters/documentId"
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentVersionResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      operationId: createDocumentVersion
+      summary: Create a document version
+      description: Manage a new version of an existing document to the OneLaw document library.
+      tags: [Document Versions]
+      parameters: 
+        - $ref: '#/components/parameters/documentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentVersionCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   #
   # Utility
