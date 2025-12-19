@@ -163,6 +163,24 @@ In this example, the known party (the company) is related to another party (the 
 
 In this example, the known party (the client) has a legal matter with the firm that is being billed to the related party (the billing party). 
 
+## Webhooks (BETA)
+
+You can subscribe to webhook notification of party, matter and document changes in OneLaw Cloud. In the OneLaw App to go Administration > Inegrations > Webhook Subscriptions. Add a new subscription record with the HTTPS URL that you want to receive the webhook notification at. 
+
+Notes:
+
+1. The URL must use the HTTPS scheme
+1. The webhook request will be POSTed to the URL
+1. It will include the following headers
+   - `Webhook-id` - an idempotent Webhook-id header that will not change on subsequent retries
+   - `Webhook-timestamp` - timestamp for when the HTTP request was sent in unix epoch format
+   - `Webhook-signature` - HMAC-256 signature
+1. The body will contain a JSON encoded object with the following top-level fields
+   - `id` - copy of the `webhook-id` header
+   - `type` - the type of the event (e.g. "party.created"), determines the schema of the `data` object
+   - `timestamp` - timestamp for when the HTTP request was sent in ISO 8601 UTC
+   - `data` - the data associated with the event, schema determined by the `type` field
+
 ## Next Steps
 
 [Reference](/api/reference/)
