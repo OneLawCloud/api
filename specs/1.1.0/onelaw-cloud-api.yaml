@@ -1026,7 +1026,7 @@ components:
             nullable: false
           matterNumber:
             type: string
-            description: Natural key or user reference for parties
+            description: Natural key or user reference for matters
             nullable: false
 
     #
