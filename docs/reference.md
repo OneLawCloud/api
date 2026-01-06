@@ -13,8 +13,8 @@ Full OpenAPI specifications are available in OpenAPI (Swagger) format at the lin
 OneLaw Cloud | API Version                | Webhook Version | Notes
 -------------|----------------------------|-----------------|------
 4.2.4        | [1.0.0](/api/specs/1.0.0/) | None            | Initial public release
-4.2.5        | [1.1.0](/api/specs/1.1.0/) | [1.0.0](/webhooks/1.0.0/) | In development
-4.3.0        | [1.2.0](/api/specs/1.2.0/) | [1.0.0](/webhooks/1.0.0/) | In development
+4.2.5        | [1.1.0](/api/specs/1.1.0/) | [1.0.0](/api/webhooks/1.0.0/) | In development
+4.3.0        | [1.2.0](/api/specs/1.2.0/) | [1.0.0](/api/webhooks/1.0.0/) | In development
 
 ## Next Steps
 
