@@ -1,0 +1,195 @@
+openapi: "3.1.0"
+info:
+  title: OneLaw Cloud Webhooks
+  version: 1.0.0
+  license: 
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  description: |
+    ## Webhook delivery model
+
+    - Subscribers register one HTTPS endpoint
+    - All enabled webhook events are POSTed to that endpoint
+    - The event type is identified by the `type` field in the JSON body
+    - Consumers should route events based on `type`, not URL
+
+webhooks:
+
+  PartyEvent:
+    post:
+      operationId: partyEvent
+      summary: A party has been created or changed
+      tags: [ Parties ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartyWebhookRequest" 
+      responses:
+        "200":
+          description: webhook received
+
+  MatterEvent:
+    post:
+      operationId: matterEvent
+      summary: A matter has been created or changed
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatterWebhookRequest" 
+      responses:
+        "200":
+          description: webhook received
+
+  DocumentEvent:
+    post:
+      operationId: documentEvent
+      summary: A document has been managed or updated
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentWebhookRequest" 
+      responses:
+        "200":
+          description: webhook received
+
+components: 
+  schemas: 
+
+    #
+    # Webhook request base schemas
+    #
+
+    WebhookRequestBase:
+      type: object
+      description: Base JSON schema used in all outbound webhook requests
+      required: [ id, type, timestamp ]
+      properties:
+        id:
+          type: string
+          description: Uniquely identifies the event being described (will be the same for subsequent retries)
+        type:
+          type: string
+          description: |
+            A full-stop delimited type associated with the event.
+            The type indicates the type of the event being sent (e.g "user.created" or "invoice.paid"),
+            indicates the schema of the payload (passed in data),
+            and it should be grouped hierarchically.
+        timestamp:
+          type: string
+          format: date-time
+          description: |
+            The timestamp of when the event occurred (not necessarily the same of when it was delivered) 
+            in an ISO 8601 formatted string.
+
+    #
+    # Party Webhook schemas
+    #
+
+    PartyWebhookRequest:
+      allOf: 
+        - $ref: '#/components/schemas/WebhookRequestBase'
+        - type: object
+          description: JSON schema used in outbound webhook requests for Party changes
+          required: [ data ]
+          properties:
+            data:
+              $ref: '#/components/schemas/PartyWebhookRequestData'
+
+    PartyWebhookRequestData:
+      type: object
+      description: Data sent inside a webhook request envelope for party changes
+      required: [ partyId, partyNumber ]
+      properties: 
+        partyId:
+          type: string
+          format: uuid
+        partyNumber:
+          type: string
+          description: Natural key or user reference for parties
+        clientId:
+          type: string
+          format: uuid
+          description: Included only if the party is a client of the law firm
+        clientNumber:
+          type: string
+          description: Included only if the party is a client of the law firm
+
+    #
+    # Matter Webhook schemas
+    #
+
+    MatterWebhookRequest:
+      allOf: 
+        - $ref: '#/components/schemas/WebhookRequestBase'
+        - type: object
+          description: JSON schema used in outbound webhook requests for Matter changes
+          required: [ data ]
+          properties:
+            data:
+              $ref: '#/components/schemas/MatterWebhookRequestData'
+
+    MatterWebhookRequestData:
+      allOf: 
+      - $ref: '#/components/schemas/PartyWebhookRequestData'
+      - type: object
+        description: Data sent inside a webhook request envelope for Matter changes
+        required: [ matterId, matterNumber ]
+        properties: 
+          matterId:
+            type: string
+            format: uuid
+          matterNumber:
+            type: string
+            description: Natural key or user reference for matters
+
+    #
+    # Document Webhook schemas
+    #
+
+    DocumentWebhookRequest:
+      allOf: 
+        - $ref: '#/components/schemas/WebhookRequestBase'
+        - type: object
+          description: JSON schema used in outbound webhook requests for Document changes
+          required: [ data ]
+          properties:
+            data:
+              $ref: '#/components/schemas/DocumentWebhookRequestData'
+
+    DocumentWebhookRequestData:
+      allOf: 
+      - $ref: '#/components/schemas/PartyWebhookRequestData'
+      - type: object
+        required: [ documentId, documentNumber, partyId, partyNumber ]
+        properties: 
+          documentId:
+            type: string
+            format: uuid
+            description: ID of the document
+          documentNumber:
+            type: string
+            description: Natural key or user reference for the document, in the format {number.version}.
+          partyId:
+            type: string
+            format: uuid
+            description: ID of the party the document is managed for
+          partyNumber:
+            type: string
+            description: Natural key or user reference of the party the document is managed for
+          clientId:
+            type: string
+            format: uuid
+            description: Included only if the document is managed at the matter level
+          clientNumber:
+            type: string
+            description: Included only if the document is managed at the matter level
+          matterId:
+            type: string
+            format: uuid
+            description: Included only if the document is managed at the matter level
+          matterNumber:
+            type: string
+            description: Included only if the document is managed at the matter level

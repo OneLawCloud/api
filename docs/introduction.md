@@ -7,16 +7,20 @@ nav_order: 10
 
 > ⚠️ **Draft:** This page is a work in progress and may change.
 
-The OneLaw Cloud API provides programmatic access to the OneLaw Cloud legal practice management platform. It allows approved partners and integrators to securely interact with a firm’s data — including parties, clients, matters, time entries, and documents — using standard RESTful requests and JSON payloads.
+The OneLaw Cloud API provides programmatic access to the OneLaw Cloud legal practice management platform. 
+It allows approved partners and integrators to securely interact with a firm’s data — including parties, clients, matters, time entries, and documents — using standard RESTful requests and JSON payloads.
 
-The API is intended for developers building software that integrates with OneLaw Cloud: for example, legal service automation tools, document generation platforms, time-tracking integrations, or client relationship management systems. Access is available only under a partnership agreement, ensuring that all integrations meet OneLaw’s data protection and compliance standards.
+The API is intended for developers building software that integrates with OneLaw Cloud: for example, legal service automation tools, document generation platforms, time-tracking integrations, or client relationship management systems. 
+Access is available only under a partnership agreement, ensuring that all integrations meet OneLaw’s data protection and compliance standards.
 
 ## Environments
 
 OneLaw Cloud is a single-tenanted system: each law firm has its own isolated service instance, including its own API endpoint.
 There is no single global base URL for the OneLaw Cloud API.
 
-Instead, applications determine the correct base URL for a user or tenant by calling a configuration service. After obtaining an access token through OAuth 2.0, the client calls this configuration endpoint, which returns the base URL for the tenant’s API. All subsequent API requests must be directed to that URL.
+Instead, applications determine the correct base URL for a user or tenant by calling a configuration service. 
+After obtaining an access token through OAuth 2.0, the client calls this configuration endpoint, which returns the base URL for the tenant’s API. 
+All subsequent API requests must be directed to that URL.
 
 ## Test Tenant
 
@@ -25,15 +29,12 @@ When an integration is ready, individual law firms can whitelist that integratio
 
 ## Versioning
 
-Because each law firm runs its own dedicated instance of the OneLaw Cloud Service, different firms may be running one of several recent service versions. Each service version supports a specific OpenAPI specification, which defines the endpoints, schemas, and authentication models supported by that version.
+Because each law firm runs its own dedicated instance of the OneLaw Cloud Service, different firms may be running one of several recent service versions. 
+Each service version supports a specific OpenAPI specification, which defines the endpoints, schemas, and authentication models supported by that version.
+For details see [Reference](/api/reference/)
 
-OneLaw Cloud | API Version                | Notes
--------------|----------------------------|------
-4.2.4        | [1.0.0](/api/specs/1.0.0/) | Initial public release
-4.2.5        | [1.0.0](/api/specs/1.0.0/) | 
-4.3.0        | [1.1.0](/api/specs/1.1.0/) | In development
-
-A full changelog will be maintained to record new endpoints, parameter additions, and deprecations. New versions are designed to be non-breaking whenever possible, and existing API versions remain supported for a defined period after deprecation. See [Release Notes](releasenotes.md) for more.
+A full changelog will be maintained to record new endpoints, parameter additions, and deprecations. 
+New versions are designed to be non-breaking whenever possible, and existing API versions remain supported for a defined period after deprecation. See [Release Notes](releasenotes.md) for more.
 
 ## Backward Compatibility
 

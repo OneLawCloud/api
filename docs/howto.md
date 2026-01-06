@@ -165,7 +165,7 @@ In this example, the known party (the client) has a legal matter with the firm t
 
 ## Webhooks (BETA)
 
-You can subscribe to receive webhook notifications for party, matter and document changes in OneLaw Cloud. In the OneLaw App go to Administration > Inegrations > Webhook Subscriptions. Add a new subscription record with the URL that you want to receive the webhook notification.
+You can subscribe to receive webhook notifications for party, matter and document changes in OneLaw Cloud. In the OneLaw App go to Administration > Integrations > Webhook Subscriptions. Add a new subscription record with the URL that you want to receive the webhook notification.
 
 Notes:
 
