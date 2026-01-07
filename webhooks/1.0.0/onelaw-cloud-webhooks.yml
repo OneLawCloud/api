@@ -110,11 +110,11 @@ components:
           type: string
           description: Natural key or user reference for parties
         clientId:
-          type: string
+          type: [string, "null"]
           format: uuid
           description: Included only if the party is a client of the law firm
         clientNumber:
-          type: string
+          type: [string, "null"]
           description: Included only if the party is a client of the law firm
 
     #
@@ -180,16 +180,16 @@ components:
             type: string
             description: Natural key or user reference of the party the document is managed for
           clientId:
-            type: string
+            type: [string, "null"]
             format: uuid
             description: Included only if the document is managed at the matter level
           clientNumber:
-            type: string
+            type: [string, "null"]
             description: Included only if the document is managed at the matter level
           matterId:
-            type: string
+            type: [string, "null"]
             format: uuid
             description: Included only if the document is managed at the matter level
           matterNumber:
-            type: string
+            type: [string, "null"]
             description: Included only if the document is managed at the matter level
