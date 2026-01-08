@@ -40,7 +40,7 @@ webhooks:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PartyWebhookRequest" 
+              $ref: "#/components/schemas/PartyWebhook" 
       responses:
         "200":
           description: webhook received
@@ -69,7 +69,7 @@ webhooks:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MatterWebhookRequest" 
+              $ref: "#/components/schemas/MatterWebhook" 
       responses:
         "200":
           description: webhook received
@@ -98,7 +98,36 @@ webhooks:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DocumentWebhookRequest" 
+              $ref: "#/components/schemas/DocumentWebhook" 
+      responses:
+        "200":
+          description: webhook received
+
+  DocumentMovedEvent:
+    post:
+      operationId: documentMovedEvent
+      summary: A document has been moved to a different Party or Matter
+      parameters: 
+      - name: Webhook-ID
+        description: ID of the event, same for all retries
+        in: header
+        schema: 
+          type: string
+      - name: Webhook-Timestamp
+        description: Time this request was sent in Unix epoch format
+        in: header
+        schema: 
+          type: integer
+      - name: Webhook-Signature
+        description: HMAC signature of the payload
+        in: header
+        schema: 
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentMovedWebhook" 
       responses:
         "200":
           description: webhook received
@@ -110,7 +139,7 @@ components:
     # Webhook request base schemas
     #
 
-    WebhookRequestBase:
+    WebhookBase:
       type: object
       description: Base JSON schema used in all outbound webhook requests
       required: [ id, type, timestamp ]
@@ -134,17 +163,17 @@ components:
     # Party Webhook schemas
     #
 
-    PartyWebhookRequest:
+    PartyWebhook:
       allOf: 
-        - $ref: '#/components/schemas/WebhookRequestBase'
+        - $ref: '#/components/schemas/WebhookBase'
         - type: object
           description: JSON schema used in outbound webhook requests for Party changes
           required: [ data ]
           properties:
             data:
-              $ref: '#/components/schemas/PartyWebhookRequestData'
+              $ref: '#/components/schemas/PartyWebhookData'
 
-    PartyWebhookRequestData:
+    PartyWebhookData:
       type: object
       description: Data sent inside a webhook request envelope for party changes
       required: [ partyId, partyNumber ]
@@ -167,19 +196,19 @@ components:
     # Matter Webhook schemas
     #
 
-    MatterWebhookRequest:
+    MatterWebhook:
       allOf: 
-        - $ref: '#/components/schemas/WebhookRequestBase'
+        - $ref: '#/components/schemas/WebhookBase'
         - type: object
           description: JSON schema used in outbound webhook requests for Matter changes
           required: [ data ]
           properties:
             data:
-              $ref: '#/components/schemas/MatterWebhookRequestData'
+              $ref: '#/components/schemas/MatterWebhookData'
 
-    MatterWebhookRequestData:
+    MatterWebhookData:
       allOf: 
-      - $ref: '#/components/schemas/PartyWebhookRequestData'
+      - $ref: '#/components/schemas/PartyWebhookData'
       - type: object
         description: Data sent inside a webhook request envelope for Matter changes
         required: [ matterId, matterNumber ]
@@ -195,19 +224,19 @@ components:
     # Document Webhook schemas
     #
 
-    DocumentWebhookRequest:
+    DocumentWebhook:
       allOf: 
-        - $ref: '#/components/schemas/WebhookRequestBase'
+        - $ref: '#/components/schemas/WebhookBase'
         - type: object
           description: JSON schema used in outbound webhook requests for Document changes
           required: [ data ]
           properties:
             data:
-              $ref: '#/components/schemas/DocumentWebhookRequestData'
+              $ref: '#/components/schemas/DocumentWebhookData'
 
-    DocumentWebhookRequestData:
-      allOf: 
-      - $ref: '#/components/schemas/PartyWebhookRequestData'
+    DocumentWebhookData:
+      allOf:
+      - $ref: '#/components/schemas/DocumentLocationData'
       - type: object
         required: [ documentId, documentNumber, partyId, partyNumber ]
         properties: 
@@ -218,24 +247,63 @@ components:
           documentNumber:
             type: string
             description: Natural key or user reference for the document, in the format {number.version}.
-          partyId:
-            type: string
-            format: uuid
-            description: ID of the party the document is managed for
-          partyNumber:
-            type: string
-            description: Natural key or user reference of the party the document is managed for
-          clientId:
-            type: [string, "null"]
-            format: uuid
-            description: Included only if the document is managed at the matter level
-          clientNumber:
-            type: [string, "null"]
-            description: Included only if the document is managed at the matter level
-          matterId:
-            type: [string, "null"]
-            format: uuid
-            description: Included only if the document is managed at the matter level
-          matterNumber:
-            type: [string, "null"]
-            description: Included only if the document is managed at the matter level
+
+    #
+    # Document Moved Schemas
+    #
+
+    DocumentMovedWebhook:
+      allOf: 
+        - $ref: '#/components/schemas/WebhookBase'
+        - type: object
+          description: JSON schema used in outbound webhook requests for Document moves
+          required: [ data ]
+          properties:
+            data:
+              $ref: '#/components/schemas/DocumentMovedWebhookData'
+
+    DocumentMovedWebhookData:
+      type: object
+      required: [ documentId, documentNumber ]
+      properties: 
+        documentId:
+          type: string
+          format: uuid
+          description: ID of the document
+        documentNumber:
+          type: string
+          description: Natural key or user reference for the document, in the format {number.version}.
+        from:
+          $ref: '#/components/schemas/DocumentLocationData'
+        to:
+          $ref: '#/components/schemas/DocumentLocationData'
+
+    #
+    # Shared Document Schema
+    #
+
+    DocumentLocationData:
+      type: object
+      required: [ partyId, partyNumber ]
+      properties: 
+        partyId:
+          type: string
+          format: uuid
+          description: ID of the party the document is managed for
+        partyNumber:
+          type: string
+          description: Natural key or user reference of the party the document is managed for
+        clientId:
+          type: [string, "null"]
+          format: uuid
+          description: Included only if the document is managed at the matter level
+        clientNumber:
+          type: [string, "null"]
+          description: Included only if the document is managed at the matter level
+        matterId:
+          type: [string, "null"]
+          format: uuid
+          description: Included only if the document is managed at the matter level
+        matterNumber:
+          type: [string, "null"]
+          description: Included only if the document is managed at the matter level
