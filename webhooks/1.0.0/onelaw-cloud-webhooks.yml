@@ -6,12 +6,13 @@ info:
     name: MIT
     url: https://opensource.org/licenses/MIT
   description: |
-    ## Webhook delivery model
+    ## Usage
 
-    - Subscribers register one HTTPS endpoint
-    - All enabled webhook events are POSTed to that endpoint
-    - The event type is identified by the `type` field in the JSON body
-    - Consumers should route events based on `type`, not URL
+    - Subscribers register one HTTPS endpoint in the OneLaw App and all selected webhook events are sent to that endpoint
+    - The event type is specified by the `type` field in the JSON body and determines the schema of the `data` field
+    - Subscribers must validate the `Webhook-Signature` header for every webhook request they receive
+      ([details](https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md#verifying-webhook-authenticity)) 
+      and reject requests that have invalid signatures
 
 webhooks:
 
@@ -19,7 +20,22 @@ webhooks:
     post:
       operationId: partyEvent
       summary: A party has been created or changed
-      tags: [ Parties ]
+      parameters: 
+      - name: Webhook-ID
+        description: ID of the event, same for all retries
+        in: header
+        schema: 
+          type: string
+      - name: Webhook-Timestamp
+        description: Time this request was sent in Unix epoch format
+        in: header
+        schema: 
+          type: integer
+      - name: Webhook-Signature
+        description: HMAC signature of the payload
+        in: header
+        schema: 
+          type: string
       requestBody:
         content:
           application/json:
@@ -33,6 +49,22 @@ webhooks:
     post:
       operationId: matterEvent
       summary: A matter has been created or changed
+      parameters: 
+      - name: Webhook-ID
+        description: ID of the event, same for all retries
+        in: header
+        schema: 
+          type: string
+      - name: Webhook-Timestamp
+        description: Time this request was sent in Unix epoch format
+        in: header
+        schema: 
+          type: integer
+      - name: Webhook-Signature
+        description: HMAC signature of the payload
+        in: header
+        schema: 
+          type: string
       requestBody:
         content:
           application/json:
@@ -46,6 +78,22 @@ webhooks:
     post:
       operationId: documentEvent
       summary: A document has been managed or updated
+      parameters: 
+      - name: Webhook-ID
+        description: ID of the event, same for all retries
+        in: header
+        schema: 
+          type: string
+      - name: Webhook-Timestamp
+        description: Time this request was sent in Unix epoch format
+        in: header
+        schema: 
+          type: integer
+      - name: Webhook-Signature
+        description: HMAC signature of the payload
+        in: header
+        schema: 
+          type: string
       requestBody:
         content:
           application/json:
@@ -73,10 +121,8 @@ components:
         type:
           type: string
           description: |
-            A full-stop delimited type associated with the event.
-            The type indicates the type of the event being sent (e.g "user.created" or "invoice.paid"),
-            indicates the schema of the payload (passed in data),
-            and it should be grouped hierarchically.
+            The type of the event being sent (e.g "user.created" or "invoice.paid"),
+            indicates the schema of the payload (passed in the `data` field).
         timestamp:
           type: string
           format: date-time
