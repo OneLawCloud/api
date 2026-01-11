@@ -40,7 +40,7 @@ webhooks:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PartyWebhook" 
+              $ref: "#/components/schemas/PartyWebhookRequest" 
       responses:
         "200":
           description: webhook received
@@ -69,7 +69,7 @@ webhooks:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MatterWebhook" 
+              $ref: "#/components/schemas/MatterWebhookRequest" 
       responses:
         "200":
           description: webhook received
@@ -98,7 +98,7 @@ webhooks:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DocumentWebhook" 
+              $ref: "#/components/schemas/DocumentWebhookRequest" 
       responses:
         "200":
           description: webhook received
@@ -127,7 +127,7 @@ webhooks:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DocumentMovedWebhook" 
+              $ref: "#/components/schemas/DocumentMovedWebhookRequest" 
       responses:
         "200":
           description: webhook received
@@ -163,15 +163,15 @@ components:
     # Party Webhook schemas
     #
 
-    PartyWebhook:
+    PartyWebhookRequest:
       allOf: 
-        - $ref: '#/components/schemas/WebhookBase'
-        - type: object
-          description: JSON schema used in outbound webhook requests for Party changes
-          required: [ data ]
-          properties:
-            data:
-              $ref: '#/components/schemas/PartyWebhookData'
+      - $ref: '#/components/schemas/WebhookBase'
+      - type: object
+        description: JSON schema used in outbound webhook requests for Party changes
+        required: [ data ]
+        properties:
+          data:
+            $ref: '#/components/schemas/PartyWebhookData'
 
     PartyWebhookData:
       type: object
@@ -196,7 +196,7 @@ components:
     # Matter Webhook schemas
     #
 
-    MatterWebhook:
+    MatterWebhookRequest:
       allOf: 
         - $ref: '#/components/schemas/WebhookBase'
         - type: object
@@ -224,7 +224,7 @@ components:
     # Document Webhook schemas
     #
 
-    DocumentWebhook:
+    DocumentWebhookRequest:
       allOf: 
         - $ref: '#/components/schemas/WebhookBase'
         - type: object
@@ -238,21 +238,15 @@ components:
       allOf:
       - $ref: '#/components/schemas/DocumentLocationData'
       - type: object
-        required: [ documentId, documentNumber, partyId, partyNumber ]
-        properties: 
-          documentId:
-            type: string
-            format: uuid
-            description: ID of the document
-          documentNumber:
-            type: string
-            description: Natural key or user reference for the document, in the format {number.version}.
+        properties:
+          document:
+            $ref: '#/components/schemas/DocumentData'
 
     #
     # Document Moved Schemas
     #
 
-    DocumentMovedWebhook:
+    DocumentMovedWebhookRequest:
       allOf: 
         - $ref: '#/components/schemas/WebhookBase'
         - type: object
@@ -263,47 +257,64 @@ components:
               $ref: '#/components/schemas/DocumentMovedWebhookData'
 
     DocumentMovedWebhookData:
-      type: object
-      required: [ documentId, documentNumber ]
-      properties: 
-        documentId:
-          type: string
-          format: uuid
-          description: ID of the document
-        documentNumber:
-          type: string
-          description: Natural key or user reference for the document, in the format {number.version}.
-        from:
-          $ref: '#/components/schemas/DocumentLocationData'
-        to:
-          $ref: '#/components/schemas/DocumentLocationData'
+      allOf: 
+        - $ref: '#/components/schemas/DocumentWebhookData'
+        - type: object
+          required: [ from, to ]
+          properties: 
+            from:
+              $ref: '#/components/schemas/DocumentLocationData'
+            to:
+              $ref: '#/components/schemas/DocumentLocationData'
 
     #
     # Shared Document Schema
     #
 
+    DocumentData:
+      type: object
+      required: [ id, number, revision, categories, mimeType ]
+      properties: 
+        id:
+          type: string
+          format: uuid
+          description: The ID of the resource
+        number:
+          type: string
+          description: The resource's natural key or user reference
+        revision:
+          type: integer
+          description: Increments when the binary file content changes
+        categories:
+          type: array
+          items:
+            type: string
+        mimeType:
+          type: string
+          description: The MIME type for the file if known
+        fileExtension:
+          type: [string, "null"]
+          description: The file name extension, e.g. '.PDF'
+
     DocumentLocationData:
       type: object
-      required: [ partyId, partyNumber ]
+      required: [ party ]
       properties: 
-        partyId:
+        party:
+          $ref: "#/components/schemas/ResourceRef"
+        client:
+          $ref: "#/components/schemas/ResourceRef"
+        matter:
+          $ref: "#/components/schemas/ResourceRef"
+
+    ResourceRef:
+      type: object
+      properties: 
+        id:
           type: string
           format: uuid
-          description: ID of the party the document is managed for
-        partyNumber:
+          description: The ID of the resource
+        number:
           type: string
-          description: Natural key or user reference of the party the document is managed for
-        clientId:
-          type: [string, "null"]
-          format: uuid
-          description: Included only if the document is managed at the matter level
-        clientNumber:
-          type: [string, "null"]
-          description: Included only if the document is managed at the matter level
-        matterId:
-          type: [string, "null"]
-          format: uuid
-          description: Included only if the document is managed at the matter level
-        matterNumber:
-          type: [string, "null"]
-          description: Included only if the document is managed at the matter level
+          description: The resource's natural key or user reference
+
