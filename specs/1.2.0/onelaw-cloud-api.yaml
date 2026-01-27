@@ -1246,10 +1246,26 @@ paths:
           $ref: '#/components/responses/BadRequest'
 
   #
-  # Delete documents
+  # Document get and delete
   #
 
   /documents/{documentId}:
+    get:
+      operationId: getDocument
+      summary: Get document
+      description: Get document metadata and download link
+      tags: [Document Library]
+      parameters: 
+      - $ref: "#/components/parameters/documentId"
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
     delete:
       operationId: deleteDocument
       summary: Delete a document
