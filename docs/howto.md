@@ -46,7 +46,7 @@ Uploading a document involves four distinct steps:
 
 1. Request an Upload Ticket
 
-    Begin by calling `GET /uploads/ticket`.
+    Begin by calling `POST /uploads`.
     The response includes a pre-signed upload URL and an upload ID. These allow your client application to securely upload the binary file directly to cloud storage without routing the data through the OneLaw API servers.
 
 2. Upload the File
