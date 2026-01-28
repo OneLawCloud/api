@@ -1625,23 +1625,6 @@ paths:
                 $ref: '#/components/schemas/ClientPagedResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
-            
-  /clients/{clientId}:
-    parameters:
-      - $ref: '#/components/parameters/clientId'
-    get:
-      operationId: getClient
-      summary: Get a client by ID
-      tags: [Clients]
-      responses:
-        '200':
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Client'
-        '404':
-          $ref: '#/components/responses/NotFound'
 
   #
   # Matters
