@@ -191,6 +191,48 @@ components:
         type: string
         example: 'c7b5e4fb-3f05-4d84-8a4a-08f3d9b9ca2e'
 
+    #
+    # Document category filter
+    #
+
+    documentCategory:
+      name: category
+      in: query
+      description: |
+        Filters documents by category. Supports single value or multiple values with boolean search.
+
+        Boolean Semantics:
+
+        - OR: find documents with one of several categories (e.g. 'category=AML,ID')
+        - AND: find documents with all of several categories (e.g. 'category=AML&category=ID')
+      schema:
+        type: array
+        items:
+          type: string
+      style: form
+      explode: true
+
+    #
+    # Document file name extension filter
+    #
+
+    fileExtension:
+      name: extension
+      in: query
+      description: |
+        Filters documents by file name extension. Supports single value or multiple values with boolean search.
+
+        Boolean Semantics:
+
+        - OR: find documents with one of several extensions (e.g. 'extension=pdf,docx')
+        - AND: not supported
+      schema:
+        type: array
+        items:
+          type: string
+      style: form
+      explode: true
+
   schemas:
     SystemPartyType:
       type: string
@@ -616,6 +658,7 @@ components:
             $ref: '#/components/schemas/Party'
         total:
           type: integer
+          description: The total number of results available to be paged through
         lastUpdated:
           type: string
           format: date-time
@@ -661,6 +704,7 @@ components:
             $ref: '#/components/schemas/Client'
         total:
           type: integer
+          description: The total number of results available to be paged through
         lastUpdated:
           type: string
           format: date-time
@@ -843,6 +887,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Document'
+        total:
+          type: integer
+          description: The total number of results available to be paged through
+
     DocumentVersionCreate:
       type: object
       required: [ source ]
@@ -852,6 +900,7 @@ components:
         note:
           type: string
           description: A text note describing this version of the document
+
     DocumentVersion:
       type: object
       properties:
@@ -865,6 +914,7 @@ components:
         note:
           type: string
           description: A text note describing this version of the document
+
     DocumentVersionResponse:
       type: object
       properties:
@@ -872,6 +922,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DocumentVersion'
+
     DocumentCategories:
       type: object
       required: [items]
@@ -1153,6 +1204,10 @@ paths:
       tags: [Document Library]
       parameters: 
       - $ref: "#/components/parameters/partyId"
+      - $ref: "#/components/parameters/documentCategory"
+      - $ref: "#/components/parameters/fileExtension"
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
       responses:
         '200':
           description: Successful response.
@@ -1205,6 +1260,10 @@ paths:
       tags: [Document Library]
       parameters: 
       - $ref: "#/components/parameters/matterId"
+      - $ref: "#/components/parameters/documentCategory"
+      - $ref: "#/components/parameters/fileExtension"
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
       responses:
         '200':
           description: Successful response.
@@ -1447,8 +1506,6 @@ paths:
       description: Parties are all the people and legal entities involved in legal matters.
       tags: [Parties]
       parameters:
-        - $ref: '#/components/parameters/offset'
-        - $ref: '#/components/parameters/limit'
         - name: updatedAfter
           in: query
           description: Get parties updated after the specified UTC time stamp.
@@ -1457,7 +1514,13 @@ paths:
             format: date-time
         - name: contactableBy
           in: query
-          description: Filters parties by available contact details. Supports multiple values and boolean operations. See examples for details.
+          description: |
+            Filters parties by available contact details. Supports single values or multiple values with boolean search.
+
+            Boolean Semantics:
+
+            - OR: find parties contactable in one of several ways (e.g. 'contactableBy=phone,email')
+            - AND: find parties contactable in all of several ways (e.g. 'contactableBy=phone&contactableBy=email')
           schema:
             type: array
             items:
@@ -1465,16 +1528,8 @@ paths:
               enum: [phone, email, address]
           style: form
           explode: true
-          examples:
-            single:
-              summary: Get parties with a phone number
-              description: GET /parties?contactableBy=phone
-            or:
-              summary: Get parties with a phone number or email address
-              description: GET /parties?contactableBy=phone,email
-            and:
-              summary: Get parties with a phone number and address
-              description: GET /parties?contactableBy=phone&contactableBy=address
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
       responses:
         '200':
           description: Successful response.
@@ -1683,8 +1738,8 @@ paths:
           schema:
             type: string
             format: date-time
-        - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
       responses:
         '200':
           description: Successful response.
