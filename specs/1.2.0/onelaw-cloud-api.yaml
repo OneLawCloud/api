@@ -246,8 +246,7 @@ components:
       schema:
         type: array
         items:
-          type: string
-          enum: [ Unknown, Email, WordDocument, WordTemplate, RTF, PDF, ExcelDocument, ExcelTemplate, Custom ]
+          $ref: '#/components/schemas/WellKnownDocumentType'
       explode: false
 
   schemas:
@@ -824,6 +823,11 @@ components:
           enum: [ pdf ]
           description: The file type to convert the upload to
 
+    WellKnownDocumentType:
+      type: string
+      enum: [ Unknown, Email, WordDocument, WordTemplate, RTF, PDF, ExcelDocument, ExcelTemplate, Custom ]
+      description: Document types well-known to the system, this list could be extended and code handle new items, if only by ignoring them
+
     DocumentSource:
       type: object
       description: A source of content to create documents from.
@@ -885,9 +889,7 @@ components:
             type: string
             format: date-time
           type:
-            type: string
-            enum: [ Unknown, Email, WordDocument, WordTemplate, RTF, PDF, ExcelDocument, ExcelTemplate, Custom ]
-            description: Type of document
+            $ref: '#/components/schemas/WellKnownDocumentType'
           contentUrl:
             type: string
             format: uri
