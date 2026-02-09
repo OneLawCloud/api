@@ -147,7 +147,6 @@ components:
         type: array
         items:
           $ref: '#/components/schemas/ID'
-      style: form
       explode: true
       description: One or more party IDs that you want to find related parties for
 
@@ -209,7 +208,6 @@ components:
         type: array
         items:
           type: string
-      style: form
       explode: true
 
     #
@@ -230,8 +228,27 @@ components:
         type: array
         items:
           type: string
-      style: form
-      explode: true
+
+    #
+    # Document type filter
+    #
+
+    documentType:
+      name: type
+      in: query
+      description: |
+        Filters documents by well-known document type. Supports single value or multiple values with boolean search.
+
+        Boolean Semantics:
+
+        - OR: find documents with one of several types (e.g. 'type=WordTemplate,ExcelTemplate')
+        - AND: not supported
+      schema:
+        type: array
+        items:
+          type: string
+          enum: [ Unknown, Email, WordDocument, WordTemplate, RTF, PDF, ExcelDocument, ExcelTemplate, Custom ]
+      explode: false
 
   schemas:
     SystemPartyType:
@@ -1083,7 +1100,7 @@ paths:
       description: Get document categories available when managing documents to a specific party
       tags: [Document Categories]
       parameters: 
-      - $ref: "#/components/parameters/partyId"
+      - $ref: '#/components/parameters/partyId'
       responses:
         '200':
           description: Successful response.
@@ -1105,7 +1122,7 @@ paths:
       description: Get document categories available when managing documents to a specific matter
       tags: [Document Categories]
       parameters: 
-      - $ref: "#/components/parameters/matterId"
+      - $ref: '#/components/parameters/matterId'
       responses:
         '200':
           description: Successful response.
@@ -1203,9 +1220,10 @@ paths:
       description: Get all documents managed at the party level.
       tags: [Document Library]
       parameters: 
-      - $ref: "#/components/parameters/partyId"
-      - $ref: "#/components/parameters/documentCategory"
-      - $ref: "#/components/parameters/fileExtension"
+      - $ref: '#/components/parameters/partyId'
+      - $ref: '#/components/parameters/documentCategory'
+      - $ref: '#/components/parameters/fileExtension'
+      - $ref: '#/components/parameters/documentType'
       - $ref: '#/components/parameters/offset'
       - $ref: '#/components/parameters/limit'
       responses:
@@ -1224,7 +1242,7 @@ paths:
         to the /uploads endpoint.
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
-      - $ref: "#/components/parameters/partyId"
+      - $ref: '#/components/parameters/partyId'
       tags: [Document Uploads]
       requestBody:
         required: true
@@ -1259,9 +1277,10 @@ paths:
       description: Get all documents managed at the matter level.
       tags: [Document Library]
       parameters: 
-      - $ref: "#/components/parameters/matterId"
-      - $ref: "#/components/parameters/documentCategory"
-      - $ref: "#/components/parameters/fileExtension"
+      - $ref: '#/components/parameters/matterId'
+      - $ref: '#/components/parameters/documentCategory'
+      - $ref: '#/components/parameters/fileExtension'
+      - $ref: '#/components/parameters/documentType'
       - $ref: '#/components/parameters/offset'
       - $ref: '#/components/parameters/limit'
       responses:
@@ -1280,7 +1299,7 @@ paths:
         to the /uploads endpoint.
       parameters:
       - $ref: '#/components/parameters/idempotencyKey'
-      - $ref: "#/components/parameters/matterId"
+      - $ref: '#/components/parameters/matterId'
       tags: [Document Uploads]
       requestBody:
         required: true
@@ -1315,7 +1334,7 @@ paths:
       description: Get document metadata and download link
       tags: [Document Library]
       parameters: 
-      - $ref: "#/components/parameters/documentId"
+      - $ref: '#/components/parameters/documentId'
       responses:
         '200':
           description: Successful response.
@@ -1349,7 +1368,7 @@ paths:
       description: Get all versions of a document.
       tags: [Document Versions]
       parameters: 
-      - $ref: "#/components/parameters/documentId"
+      - $ref: '#/components/parameters/documentId'
       responses:
         '200':
           description: Successful response.
@@ -1526,7 +1545,6 @@ paths:
             items:
               type: string
               enum: [phone, email, address]
-          style: form
           explode: true
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/limit'
@@ -1789,7 +1807,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Matter'
         '400':
-          $ref: "#/components/responses/BadRequest"
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
 
