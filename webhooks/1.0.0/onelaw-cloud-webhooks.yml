@@ -239,7 +239,7 @@ components:
 
     DocumentData:
       type: object
-      required: [ id, number, categories, contentChanged ]
+      required: [ id, number, categories ]
       properties: 
         id:
           type: string
@@ -260,8 +260,9 @@ components:
           description: The file name extension, e.g. 'pdf'
         contentChanged:
           type: boolean
-          description: Whether or not the binary file contents have changed
-
+          description: |
+            For 'document.updated' events, this flag indicates if the binary file contents
+            have changed. Only download the updated file if this flag is true.
     DocumentLocationData:
       type: object
       required: [ party ]
