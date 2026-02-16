@@ -224,7 +224,7 @@ components:
 
     DocumentMovedWebhookData:
       type: object
-      required: [ from, to ]
+      required: [ document, from, to ]
       properties: 
         document:
           $ref: '#/components/schemas/DocumentData'
