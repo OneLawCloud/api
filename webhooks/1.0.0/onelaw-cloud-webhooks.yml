@@ -20,22 +20,10 @@ webhooks:
     post:
       operationId: partyEvent
       summary: A party has been created or changed
-      parameters: 
-      - name: Webhook-ID
-        description: ID of the event, same for all retries
-        in: header
-        schema: 
-          type: string
-      - name: Webhook-Timestamp
-        description: Time this request was sent in Unix epoch format
-        in: header
-        schema: 
-          type: integer
-      - name: Webhook-Signature
-        description: HMAC signature of the payload
-        in: header
-        schema: 
-          type: string
+      parameters:
+      - $ref: '#/components/parameters/webhookId'
+      - $ref: '#/components/parameters/webhookTimestamp'
+      - $ref: '#/components/parameters/webhookSignature'
       requestBody:
         content:
           application/json:
@@ -49,22 +37,10 @@ webhooks:
     post:
       operationId: matterEvent
       summary: A matter has been created or changed
-      parameters: 
-      - name: Webhook-ID
-        description: ID of the event, same for all retries
-        in: header
-        schema: 
-          type: string
-      - name: Webhook-Timestamp
-        description: Time this request was sent in Unix epoch format
-        in: header
-        schema: 
-          type: integer
-      - name: Webhook-Signature
-        description: HMAC signature of the payload
-        in: header
-        schema: 
-          type: string
+      parameters:
+      - $ref: '#/components/parameters/webhookId'
+      - $ref: '#/components/parameters/webhookTimestamp'
+      - $ref: '#/components/parameters/webhookSignature'
       requestBody:
         content:
           application/json:
@@ -78,22 +54,10 @@ webhooks:
     post:
       operationId: documentEvent
       summary: A document has been managed or updated
-      parameters: 
-      - name: Webhook-ID
-        description: ID of the event, same for all retries
-        in: header
-        schema: 
-          type: string
-      - name: Webhook-Timestamp
-        description: Time this request was sent in Unix epoch format
-        in: header
-        schema: 
-          type: integer
-      - name: Webhook-Signature
-        description: HMAC signature of the payload
-        in: header
-        schema: 
-          type: string
+      parameters:
+      - $ref: '#/components/parameters/webhookId'
+      - $ref: '#/components/parameters/webhookTimestamp'
+      - $ref: '#/components/parameters/webhookSignature'
       requestBody:
         content:
           application/json:
@@ -107,22 +71,10 @@ webhooks:
     post:
       operationId: documentMovedEvent
       summary: A document has been moved to a different Party or Matter
-      parameters: 
-      - name: Webhook-ID
-        description: ID of the event, same for all retries
-        in: header
-        schema: 
-          type: string
-      - name: Webhook-Timestamp
-        description: Time this request was sent in Unix epoch format
-        in: header
-        schema: 
-          type: integer
-      - name: Webhook-Signature
-        description: HMAC signature of the payload
-        in: header
-        schema: 
-          type: string
+      parameters:
+      - $ref: '#/components/parameters/webhookId'
+      - $ref: '#/components/parameters/webhookTimestamp'
+      - $ref: '#/components/parameters/webhookSignature'
       requestBody:
         content:
           application/json:
@@ -133,6 +85,30 @@ webhooks:
           description: webhook received
 
 components: 
+
+  parameters:
+    webhookId:
+      name: Webhook-ID
+      description: ID of the event, same for all retries
+      in: header
+      schema: 
+        type: string
+      required: true
+    webhookTimestamp:
+      name: Webhook-Timestamp
+      description: Time this request was sent in Unix epoch format
+      in: header
+      schema: 
+        type: integer
+      required: true
+    webhookSignature:
+      name: Webhook-Signature
+      description: HMAC signature of the payload
+      in: header
+      schema: 
+        type: string
+      required: true
+
   schemas: 
 
     #
@@ -176,21 +152,12 @@ components:
     PartyWebhookData:
       type: object
       description: Data sent inside a webhook request envelope for party changes
-      required: [ partyId, partyNumber ]
+      required: [ party ]
       properties: 
-        partyId:
-          type: string
-          format: uuid
-        partyNumber:
-          type: string
-          description: Natural key or user reference for parties
-        clientId:
-          type: [string, "null"]
-          format: uuid
-          description: Included only if the party is a client of the law firm
-        clientNumber:
-          type: [string, "null"]
-          description: Included only if the party is a client of the law firm
+        party:
+          $ref: "#/components/schemas/ResourceRef"
+        client:
+          $ref: "#/components/schemas/ResourceRef"
 
     #
     # Matter Webhook schemas
@@ -207,18 +174,16 @@ components:
               $ref: '#/components/schemas/MatterWebhookData'
 
     MatterWebhookData:
-      allOf: 
-      - $ref: '#/components/schemas/PartyWebhookData'
-      - type: object
-        description: Data sent inside a webhook request envelope for Matter changes
-        required: [ matterId, matterNumber ]
-        properties: 
-          matterId:
-            type: string
-            format: uuid
-          matterNumber:
-            type: string
-            description: Natural key or user reference for matters
+      type: object
+      description: Data sent inside a webhook request envelope for Matter changes
+      required: [ party, client, matter ]
+      properties: 
+        party:
+          $ref: "#/components/schemas/ResourceRef"
+        client:
+          $ref: "#/components/schemas/ResourceRef"
+        matter:
+          $ref: "#/components/schemas/ResourceRef"
 
     #
     # Document Webhook schemas
@@ -238,6 +203,7 @@ components:
       allOf:
       - $ref: '#/components/schemas/DocumentLocationData'
       - type: object
+        required: [ document ]
         properties:
           document:
             $ref: '#/components/schemas/DocumentData'
@@ -257,15 +223,15 @@ components:
               $ref: '#/components/schemas/DocumentMovedWebhookData'
 
     DocumentMovedWebhookData:
-      allOf: 
-        - $ref: '#/components/schemas/DocumentWebhookData'
-        - type: object
-          required: [ from, to ]
-          properties: 
-            from:
-              $ref: '#/components/schemas/DocumentLocationData'
-            to:
-              $ref: '#/components/schemas/DocumentLocationData'
+      type: object
+      required: [ from, to ]
+      properties: 
+        document:
+          $ref: '#/components/schemas/DocumentData'
+        from:
+          $ref: '#/components/schemas/DocumentLocationData'
+        to:
+          $ref: '#/components/schemas/DocumentLocationData'
 
     #
     # Shared Document Schema
@@ -273,7 +239,7 @@ components:
 
     DocumentData:
       type: object
-      required: [ id, number, revision, categories, mimeType ]
+      required: [ id, number, categories, contentChanged ]
       properties: 
         id:
           type: string
@@ -282,9 +248,6 @@ components:
         number:
           type: string
           description: The resource's natural key or user reference
-        revision:
-          type: integer
-          description: Increments when the binary file content changes
         categories:
           type: array
           items:
@@ -293,8 +256,11 @@ components:
           type: string
           description: The MIME type for the file if known
         fileExtension:
-          type: [string, "null"]
-          description: The file name extension, e.g. '.PDF'
+          type: [string, null]
+          description: The file name extension, e.g. 'pdf'
+        contentChanged:
+          type: boolean
+          description: Whether or not the binary file contents have changed
 
     DocumentLocationData:
       type: object
@@ -309,6 +275,7 @@ components:
 
     ResourceRef:
       type: object
+      required: [ id, number ]
       properties: 
         id:
           type: string
@@ -317,4 +284,3 @@ components:
         number:
           type: string
           description: The resource's natural key or user reference
-
