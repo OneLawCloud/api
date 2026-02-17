@@ -37,15 +37,13 @@ The app requires a Windows 10 or later PC with a Full HD (FHD) screen resolution
 
 1. Download and run the installer from the URL provided
 2. Launch the OneLaw app from the Start menu
-3. Click Login
-4. Enter your email address and select Forgot Password
+3. Click the Login button
+4. Enter your email address and click "Forgot Password" (this is used to set your password the first time)
 5. Complete email verification and set a password
 6. Set up mandatory two-factor authentication (2FA)
 7. The OneLaw Practice Management app will open
 
-### Using the OneLaw App
-
-Below are some introductory videos on how to use the OneLaw App to setup your test tenant.
+#### Introductory Videos
 
 - [Setting up users](https://vimeo.com/1162031085/03a1ee32e1)
 - [Creating clients](https://vimeo.com/817150870)
