@@ -35,13 +35,22 @@ Our team will set up this environment for you and provide the necessary connecti
 You will manage your test tenant using the OneLaw Practice Management app.
 The app requires a Windows 10 or later PC with a Full HD (FHD) screen resolution and an internet connection.
 
-1. Download and run the installer from the URL provided.  
-2. Launch the OneLaw app from the Start menu.  
-3. Click Login.  
-4. Enter your email address and select Forgot Password.  
-5. Complete email verification and set a password.  
-6. Set up mandatory two-factor authentication (2FA).  
-7. The OneLaw Practice Management app will load.
+1. Download and run the installer from the URL provided
+2. Launch the OneLaw app from the Start menu
+3. Click Login
+4. Enter your email address and select Forgot Password
+5. Complete email verification and set a password
+6. Set up mandatory two-factor authentication (2FA)
+7. The OneLaw Practice Management app will open
+
+### Using the OneLaw App
+
+Below are some introductory videos on how to use the OneLaw App to setup your test tenant.
+
+- [Setting up users](https://vimeo.com/1162031085/03a1ee32e1)
+- [Creating clients](https://vimeo.com/817150870)
+- [Creating matters](https://vimeo.com/855576813)
+- [Creating infosheets](https://vimeo.com/1006062202)
 
 ### Enabling API Access
 
