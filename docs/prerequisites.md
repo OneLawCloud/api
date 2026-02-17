@@ -43,7 +43,7 @@ The app requires a Windows 10 or later PC with a Full HD (FHD) screen resolution
 6. Set up mandatory two-factor authentication (2FA)
 7. The OneLaw Practice Management app will open
 
-#### Introductory Videos
+### Introductory Videos
 
 - [Setting up users](https://vimeo.com/1162031085/03a1ee32e1)
 - [Creating clients](https://vimeo.com/817150870)
