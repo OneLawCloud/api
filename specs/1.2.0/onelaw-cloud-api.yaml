@@ -32,8 +32,6 @@ tags:
   description: Links between OneLaw data and workspaces in 3rd party services
 - name: Time Entries
   description: Billable or time recorded against legal matters by users
-- name: Documents
-  description: Documents managed in a structured library
 - name: Document Categories
   description: Categories used to organise the document library
 - name: Document Uploads
