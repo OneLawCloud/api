@@ -32,7 +32,7 @@ Our team will set up this environment for you and provide the necessary connecti
 
 ### First-Time Use
 
-You will manage your test tenant using the OneLaw Practice Management app.
+You will manage your test tenant using the OneLaw app.
 The app requires a Windows 10 or later PC with a Full HD (FHD) screen resolution and an internet connection.
 
 1. Download and run the installer from the URL provided
@@ -41,7 +41,7 @@ The app requires a Windows 10 or later PC with a Full HD (FHD) screen resolution
 4. Enter your email address and click "Forgot Password" (this is used to set your password the first time)
 5. Complete email verification and set a password
 6. Set up mandatory two-factor authentication (2FA)
-7. The OneLaw Practice Management app will open
+7. The OneLaw app will open
 
 ### Introductory Videos
 
@@ -54,7 +54,7 @@ The app requires a Windows 10 or later PC with a Full HD (FHD) screen resolution
 
 After logging in to the OneLaw app, you must enable API access before using it:
 
-1. Open the OneLaw Practice Management app (Windows only).  
+1. Open the OneLaw app (Windows only).  
 2. Go to Administration → Integration.  
 3. Turn on the Public API setting.  
 
@@ -64,10 +64,18 @@ When the Public API is enabled and your application is authorized, the tenant wi
 
 ## OAuth Credentials
 
-You will receive a Client ID and Client Secret. These credentials are used to initiate OAuth 2.0 Authorization Code Flow sign-ins for users.  
-After a user signs in, your application exchanges the authorization code for an access token, which grants secure, scoped access to the API on behalf of that user.
+You will receive a Client ID and Client Secret. These credentials are used to initiate OAuth 2.0 Authorization Code Flow sign-ins for users. After a user signs in, your application exchanges the authorization code for an access token, which grants secure, scoped access to the API on behalf of that user.
+
+Separate Client IDs will be allocated for testing and production.
 
 > 🔒 **Note:** Store the Client Secret securely and never embed it in public or client-side code. Treat these credentials as confidential.
+
+## Redirect (Callback) URLs
+
+Unless you provide your redirect URLs to OneLaw in advance, your API access will be set up with Postman's localhost Redirect URL (https://oauth.pstmn.io/v1/callback) so that you can immediately call the API from Postman.
+
+Email us to add Redirect URLs for your test environment.
+
 ## Next Steps
 
 [Authentication](/api/authentication/)
