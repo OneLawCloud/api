@@ -258,11 +258,6 @@ components:
         fileExtension:
           type: [string, null]
           description: The file name extension, e.g. 'pdf'
-        contentChanged:
-          type: [boolean, null]
-          description: |
-            For 'document.updated' events, this flag indicates if the binary file contents
-            have changed. Only download the updated file if this flag is true.
     DocumentLocationData:
       type: object
       required: [ party ]
