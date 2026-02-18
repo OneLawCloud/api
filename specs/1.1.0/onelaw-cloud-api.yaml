@@ -828,7 +828,7 @@ components:
             description: The user reference for the document
           fileName:
             type: string
-            description: The file name extension of the document
+            description: The file name and extension of the document
           mimeType:
             type: string
             description: The MIME type for the file if known
