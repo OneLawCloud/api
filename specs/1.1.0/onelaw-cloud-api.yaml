@@ -22,7 +22,7 @@ tags:
 - name: Party Notes
   description: Text notes on Parties
 - name: Clients
-  description: Parties that have a client relationship with the law firm
+  description: The relationship between certain parties and the law firm
 - name: Matters
   description: Legal matters that the law firm works on for their clients
 - name: Matter Notes
@@ -301,7 +301,7 @@ components:
           type: array
           items: 
             type: string
-          description: The uses for which this is the primary number.
+          description: The uses for which this is the primary address.
 
     EmailAddress:
       type: object
@@ -317,7 +317,7 @@ components:
           type: array
           items: 
             type: string
-          description: The uses for which this is the primary number.
+          description: The uses for which this is the primary email address.
 
     PartyType:
       type: object
@@ -756,7 +756,7 @@ components:
         contentType:
           type: string
           format: MIME
-          description: The MIME type of the file uploaded.
+          description: The MIME type of the file uploaded (e.g. application/pdf).
         expiry:
           type: string
           format: date-time
@@ -1455,7 +1455,7 @@ paths:
     get:
       operationId: getParties
       summary: Get all parties
-      description: Parties are all the people and legal entitites involved in legal matters.
+      description: Parties are all the people and legal entities involved in legal matters.
       tags: [Parties]
       parameters:
         - name: updatedAfter
@@ -1675,9 +1675,11 @@ paths:
 
   /clients:
     get:
-      summary: Get all clients
       operationId: getClients
-      description: Parties that have the Client role and therefore also matters with the law firm.
+      summary: Get all client relationships
+      description: |
+        Get the relationships between certain parties and the law firm. 
+        For information about the parties themselves, use the Parties resource instead.
       tags: [Clients]
       parameters:
         - name: deactivatedAfter
@@ -1702,7 +1704,10 @@ paths:
       - $ref: '#/components/parameters/clientId'
     get:
       operationId: getClient
-      summary: Get a client by ID
+      summary: Get a client relationship
+      description: |
+        Get the relationship between a certain party and the law firm. 
+        For information about the party itself, use the Parties resource instead.
       tags: [Clients]
       responses:
         '200':
