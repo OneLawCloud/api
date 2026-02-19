@@ -857,6 +857,20 @@ components:
           type: integer
           description: The total number of results available to be paged through
 
+    DocumentRevisionCreate:
+      type: object
+      required: [ source ]
+      properties:
+        source:
+          $ref: '#/components/schemas/DocumentSource'
+
+    DocumentRevision:
+      type: object
+      properties:
+        revision:
+          type: integer
+          description: The revision number
+
     DocumentVersionCreate:
       type: object
       required: [ source ]
@@ -1285,6 +1299,42 @@ paths:
       responses: 
         '204':
           description: Successfully deleted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # Document Revisions
+  # 
+
+  /documents/{documentId}/revisions: 
+    post:
+      operationId: createDocumentRevision
+      summary: Save changes to an existing document
+      description: Save changes made to an existing document keeping the same document ID and without creating a new version
+      tags: [Document Library]
+      parameters: 
+        - $ref: '#/components/parameters/documentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentRevisionCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentRevision'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
