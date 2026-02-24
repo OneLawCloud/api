@@ -465,6 +465,17 @@ components:
           nullable: false
           description: The user's user name.
 
+    MatterClient:
+      allOf:
+      - $ref: '#/components/schemas/ResourceRef'
+      - type: object
+        description: Client and party references on a matter
+        required: [party]
+        properties:
+          party:
+            $ref: '#/components/schemas/ResourceRef'
+            nullable: false
+
     Matter:
       type: object
       required: [id, number, accountNumber, description, created, subFeeTypeId]
@@ -478,6 +489,8 @@ components:
           type: integer
           description: The user-visible number used to refer to the matter.
           readOnly: true
+        client:
+          $ref: '#/components/schemas/MatterClient'
         accountNumber:
           type: string
           description: Widely used user-reference including the client and matter numbers together.
@@ -1014,6 +1027,20 @@ components:
       type: string
       format: uuid
 
+    # Defined both in API and Webhook spec.
+    # Code generators may need to exclude from one or the other.
+    ResourceRef:
+      type: object
+      required: [ id, number ]
+      properties: 
+        id:
+          type: string
+          format: uuid
+          description: The ID of the resource
+        number:
+          type: string
+          description: The resource's natural key or user reference
+
   responses:
 
     UnprocessableContent:
@@ -1344,8 +1371,10 @@ paths:
   /documents/{documentId}/revisions: 
     post:
       operationId: createDocumentRevision
-      summary: Save changes to an existing document
-      description: Save changes made to an existing document keeping the same document ID and without creating a new version
+      summary: Save changes to an existing document, limited file type support.
+      description: |
+        Save changes made to an existing document keeping the same document ID and 
+        without creating a new version. Only supported for DOCX and XLSX files.
       tags: [Document Library]
       parameters: 
         - $ref: '#/components/parameters/documentId'

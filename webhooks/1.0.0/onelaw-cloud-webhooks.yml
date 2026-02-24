@@ -269,6 +269,8 @@ components:
         matter:
           $ref: "#/components/schemas/ResourceRef"
 
+    # Defined both in API and Webhook spec.
+    # Code generators may need to exclude from one or the other.
     ResourceRef:
       type: object
       required: [ id, number ]
