@@ -849,6 +849,13 @@ components:
           created:
             type: string
             format: date-time
+          updated:
+            type: string
+            format: date-time
+          sentReceived:
+            type: string
+            format: date-time
+            nullable: true
           type:
             $ref: '#/components/schemas/WellKnownDocumentType'
           contentUrl:
