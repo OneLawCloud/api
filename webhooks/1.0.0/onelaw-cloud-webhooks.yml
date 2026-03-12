@@ -118,8 +118,12 @@ components:
     WebhookBase:
       type: object
       description: Base JSON schema used in all outbound webhook requests
-      required: [ id, type, timestamp ]
+      required: [ firmId, id, type, timestamp ]
       properties:
+        firmId:
+          type: string
+          format: uuid
+          description: ID of the law firm the webhook request is coming from
         id:
           type: string
           description: Uniquely identifies the event being described (will be the same for subsequent retries)
