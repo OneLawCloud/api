@@ -24,7 +24,7 @@ This service examines the token, reads the FirmCloudId claim inside it, and retu
 You can discover the correct base URL by calling the configuration service endpoint:
 
 ```
-GET https://config.onepractice.net/instance/production/firm
+GET https://config.onepractice.net/api/instance/production/firm
 Authorization: Bearer {YOUR_ACCESS_TOKEN}
 ```
 
