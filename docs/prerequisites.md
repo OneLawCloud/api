@@ -52,11 +52,11 @@ The app requires a Windows 10 or later PC with a Full HD (FHD) screen resolution
 
 ### Enabling API Access
 
-After logging in to the OneLaw app, you must enable API access before using it:
+The OneLaw Cloud API must be enabled before use:
 
-1. Open the OneLaw app (Windows only).  
-2. Go to Administration → Integration.  
-3. Turn on the Public API setting.  
+1. Open the OneLaw app (Windows only)
+2. Go to Administration → Integration
+3. Turn on the Public API setting toggle
 
 Add an Authorized App using the Client ID assigned to you by OneLaw.
 

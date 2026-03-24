@@ -157,4 +157,4 @@ We therefore recommend that integrators adopt a practically reasonable request c
 
 ## Next Steps
 
-[How-To](/api/how-to/)
+[Webhooks](/api/webhooks/)

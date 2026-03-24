@@ -8,34 +8,6 @@ nav_order: 60
 
 > ⚠️ **Draft:** This page is a work in progress and may change.
 
-## Checking if the API Is Available
-
-Before making any API calls, you should confirm that the API is supported and reachable for the signed-in user's tenant.
-
-Once you have a signed-in user and the base URL from the config service, send a request to the `GET /ping` endpoint:
-
-```
-GET https://firm123.api.onelaw.cloud/v1/ping
-Authorization: Bearer {YOUR_ACCESS_TOKEN}
-```
-
-If the OneLaw Cloud instance supports the API, you'll receive a 200 OK response:
-
-```
-{
-  "status": "ok",
-  "timeStamp": "2025-11-07T07:34:18.376Z"
-}
-```
-
-If the law firm is running a version of OneLaw Cloud Service that does not support the API, you'll receive a 404 Not Found response instead.
-
-Status | Meaning
--------|--------
-200 OK | The API is available and ready for use
-404 Not Found | The tenant does not yet support the API
-401 Unauthorized | The user's access token is missing or invalid
-
 ## Document Uploads
 
 The OneLaw Cloud Service supports a multi-stage process for uploading and managing documents. This design ensures large files are handled efficiently and that uploads can be flexibly associated with different entities (such as Matters or Parties).
@@ -162,31 +134,6 @@ In this example, the known party (the company) is related to another party (the 
 ```
 
 In this example, the known party (the client) has a legal matter with the firm that is being billed to the related party (the billing party). 
-
-## Webhooks (BETA)
-
-You can subscribe to receive webhook notifications for party, matter and document changes in OneLaw Cloud. In the OneLaw App go to Administration > Integrations > Webhook Subscriptions. Add a new subscription record with the URL that you want to receive the webhook notification.
-
-Notes:
-
-1. The URL must use the HTTPS scheme
-1. All webhook requests will be sent with the `POST` method
-1. A signing key is required and is used to add an HMAC signature to the webhook request. You should validate each webhook request using the method described here (code samples also provided):
-   - <https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md#verifying-webhook-authenticity>
-   - <https://github.com/standard-webhooks/standard-webhooks/tree/main/libraries>
-1. All webhook requests will include the following headers:
-   - `Webhook-id` - an idempotent Webhook-id header that will not change on subsequent retries
-   - `Webhook-timestamp` - timestamp for when the HTTP request was sent in unix epoch format
-   - `Webhook-signature` - HMAC-256 signature
-1. All webhook requests will have body content with a JSON-encoded object with the following top-level fields
-   - `id` - copy of the `webhook-id` header
-   - `type` - the type of the event (e.g. "party.created"), determines the schema of the `data` object
-   - `timestamp` - timestamp for when the HTTP request was sent in ISO 8601 UTC
-   - `data` - the data associated with the event, schema determined by the `type` field
-1. The schema for the JSON body content is defined in the OAS / Swagger spec, in the following schema:
-   - `PartyWebhookRequest`
-   - `MatterWebhookRequest`
-   - `DocumentWebhookRequest`
 
 ## Next Steps
 
