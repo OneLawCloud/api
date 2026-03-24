@@ -60,7 +60,7 @@ Not all law firms are running versions of OneLaw that include API access. Before
 Once you have a signed-in user and the base URL from the config service, send a request to the `GET /ping` endpoint:
 
 ```
-GET https://firm123.api.onelaw.cloud/v1/ping
+GET https://example.onepractice.net/api/v1/ping
 Authorization: Bearer {YOUR_ACCESS_TOKEN}
 ```
 
