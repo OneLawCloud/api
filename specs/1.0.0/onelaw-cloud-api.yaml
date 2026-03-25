@@ -10,12 +10,6 @@ info:
   description: >
     OneLaw Cloud provides a RESTful interface for managing parties, clients, matters, and time entries for law firms.
 
-servers:
-- url: https://integration.service.onepractice.net/api/v1
-  description: Integration / Testing
-- url: https://production.service.onepractice.net/api/v1
-  description: Production
-
 tags:
 - name: Parties
   description: All individuals, organisations, or groups (e.g. trusts) involved in legal matters
