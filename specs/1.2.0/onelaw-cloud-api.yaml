@@ -38,6 +38,8 @@ tags:
   description: Tracking document changes over time
 - name: Search
   description: Global and scoped search endpoints
+- name: InfoSheets
+  description: Custom data storage
 - name: Users
   description: Staff members who use the software
 - name: Codes
@@ -242,6 +244,37 @@ components:
         items:
           $ref: '#/components/schemas/WellKnownDocumentType'
       explode: false
+
+    #
+    # InfoSheet Params
+    #
+
+    feeTypeId:
+      name: feeTypeId
+      in: query
+      description: Fee type
+      required: false
+      schema:
+        type: string
+        format: uuid
+
+    partyTypeId:
+      name: partyTypeId
+      in: query
+      description: Party type
+      required: false
+      schema:
+        type: string
+        format: uuid
+
+    infoSheetId:
+      name: infoSheetId
+      in: query
+      description: InfoSheet ID
+      required: true
+      schema:
+        type: string
+        format: uuid
 
   schemas:
     SystemPartyType:
@@ -1045,6 +1078,64 @@ components:
     ID:
       type: string
       format: uuid
+
+    InfoSheet:
+      type: object
+      description: Form definition with custom data fields
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        title:
+          type: string
+        schemaType:
+          type: string
+          enum: [ 'Party', 'Matter' ]
+        schemaVersion:
+          type: integer
+        schemaRevision:
+          type: integer
+        matterAttachment:
+          $ref: '#/components/schemas/MatterAttachment'
+          nullable: true
+        partyAttachment:
+          $ref: '#/components/schemas/PartyAttachment'
+          nullable: true
+
+    MatterAttachment:
+      type: object
+      description: Options for attaching infosheets to matters
+      properties:
+        autoAttach:
+          type: boolean
+        allowAny:
+          type: boolean
+        feeTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeeType'
+
+    PartyAttachment:
+      type: object
+      description: Options for attaching infosheets to matters
+      properties:
+        autoAttach:
+          type: boolean
+        allowAny:
+          type: boolean
+        partyTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartyType'
+
+    InfoSheetList:
+      type: object
+      description: List of infosheets
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InfoSheet'
+
 
   responses:
 
@@ -2124,3 +2215,93 @@ paths:
           $ref: '#/components/responses/Deleted'
         '404':
           $ref: '#/components/responses/NotFound'
+
+  #
+  # InfoSheets
+  #
+
+  /infosheets:
+    parameters:
+      - $ref: '#/components/parameters/partyTypeId'
+      - $ref: '#/components/parameters/feeTypeId'
+    get:
+      operationId: getInfosheets
+      summary: Get all InfoSheets available 
+      description: Forms with custom fields that can be attached to parties by type or matters by fee type
+      tags: [ InfoSheets ]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InfoSheetList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+  /infosheets/{infoSheetId}:
+    parameters:
+      - $ref: '#/components/parameters/infoSheetId'
+    get:
+      operationId: getInfosheet
+      summary: Get an InfoSheet
+      description: Form with custom fields that can be attached to parties by type or matters by fee type
+      tags: [ InfoSheets ]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InfoSheet'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+  /infosheets/{infoSheetId}/schema:
+    parameters:
+      - $ref: '#/components/parameters/infoSheetId'
+    get:
+      operationId: getInfosheetSchema
+      summary: Get an InfoSheet schema definition
+      description: Formal definition of the schema of fields defined in the InfoSheet
+      tags: [ InfoSheets ]
+      responses:
+        '200':
+          description: Successful response.
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+
+  /parties/{partyId}/infosheets/{infoSheetId}/data:
+    get:
+      operationId: getPartyInfoSheetData
+      summary: Party InfoSheet data
+      description: Get the data from an InfoSheet attached to a party
+      tags: [ InfoSheets ]
+      parameters: 
+      - $ref: '#/components/parameters/partyId'
+      - $ref: '#/components/parameters/infoSheetId'
+      responses:
+        '200':
+          description: Successful response.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+
+  /matters/{matterId}/infosheets/{infoSheetId}/data:
+    get:
+      operationId: getMatterInfoSheetData
+      summary: Matter InfoSheet data
+      description: Get the data from an InfoSheet attached to a matter
+      tags: [ InfoSheets ]
+      parameters: 
+      - $ref: '#/components/parameters/matterId'
+      - $ref: '#/components/parameters/infoSheetId'
+      responses:
+        '200':
+          description: Successful response.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
