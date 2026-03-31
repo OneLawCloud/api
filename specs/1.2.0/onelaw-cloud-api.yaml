@@ -279,7 +279,7 @@ components:
   schemas:
     SystemPartyType:
       type: string
-      enum: [natural, legal, multi]
+      enum: [natural, legal, multi, firm, office]
 
     PartyRole:
       type: string
@@ -360,10 +360,20 @@ components:
     PartyType:
       type: object
       properties:
+        id:
+          $ref: '#/components/schemas/ID'
         name:
           type: string
         systemType:
           $ref: '#/components/schemas/SystemPartyType'
+        subType:
+          type: string
+          enum: [ none, company, estate ]
+        cddRequired:
+          type: boolean
+        cddLevel:
+          type: string
+          enum: [ unknown, simplified, standard, enhanced ] 
 
     Party:
       type: object
@@ -706,6 +716,14 @@ components:
           type: string
           format: date-time
           description: The latest time that any parties were updated. If this changes between loading pages then consider restarting or catching up with updatedAfter filter.
+
+    PartyTypeResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartyType'
 
     RelatedContactResponse:
       type: object
@@ -1089,7 +1107,7 @@ components:
           type: string
         schemaType:
           type: string
-          enum: [ 'Party', 'Matter' ]
+          enum: [ 'matter', 'prompt', 'fragment', 'party' ]
         schemaVersion:
           type: integer
         schemaRevision:
@@ -1121,6 +1139,8 @@ components:
         autoAttach:
           type: boolean
         allowAny:
+          type: boolean
+        clientOnly:
           type: boolean
         partyTypes:
           type: array
@@ -1598,6 +1618,26 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/RateType'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  #
+  # Party Types
+  #
+
+  /party-types:
+    get:
+      operationId: getPartyTypes
+      summary: Get all party types
+      description: Firms can define the types of party the work with
+      tags: [ Parties ]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyTypeResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
 
@@ -2222,8 +2262,8 @@ paths:
 
   /infosheets:
     parameters:
-      - $ref: '#/components/parameters/partyTypeId'
-      - $ref: '#/components/parameters/feeTypeId'
+    - $ref: '#/components/parameters/partyTypeId'
+    - $ref: '#/components/parameters/feeTypeId'
     get:
       operationId: getInfosheets
       summary: Get all InfoSheets available 
@@ -2242,7 +2282,7 @@ paths:
 
   /infosheets/{infoSheetId}:
     parameters:
-      - $ref: '#/components/parameters/infoSheetId'
+    - $ref: '#/components/parameters/infoSheetId'
     get:
       operationId: getInfosheet
       summary: Get an InfoSheet
@@ -2261,7 +2301,7 @@ paths:
 
   /infosheets/{infoSheetId}/schema:
     parameters:
-      - $ref: '#/components/parameters/infoSheetId'
+    - $ref: '#/components/parameters/infoSheetId'
     get:
       operationId: getInfosheetSchema
       summary: Get an InfoSheet schema definition
