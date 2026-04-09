@@ -22,12 +22,14 @@ tags:
   description: Legal matters that the law firm works on for their clients
 - name: Matter Notes
   description: Text notes on Matters
+- name: Time Entries
+  description: Billable or time recorded against legal matters by users
+- name: Trust Expenses
+  description: Costs paid out of client trust funds incurred on behalf of a client during the course of a matter
 - name: Matter External Links
   description: Links between OneLaw matters and workspaces in 3rd party services
 - name: External Links
   description: Links between OneLaw data and workspaces in 3rd party services
-- name: Time Entries
-  description: Billable or time recorded against legal matters by users
 - name: Document Categories
   description: Categories used to organise the document library
 - name: Document Uploads
@@ -65,6 +67,7 @@ components:
             "offline_access": "Request a refresh token."
 
   parameters:
+
     partyId:
       name: partyId
       in: path
@@ -72,6 +75,7 @@ components:
       description: Unique identifier of a party.
       schema:
         $ref: '#/components/schemas/ID'
+
     clientId:
       name: clientId
       in: path
@@ -79,6 +83,7 @@ components:
       description: Unique identifier of a client.
       schema:
         $ref: '#/components/schemas/ID'
+
     matterId:
       name: matterId
       in: path
@@ -86,6 +91,7 @@ components:
       description: Unique identifier of a matter.
       schema:
         $ref: '#/components/schemas/ID'
+
     timeEntryId:
       name: timeEntryId
       in: path
@@ -93,6 +99,7 @@ components:
       description: Unique identifier of a time entry.
       schema:
         $ref: '#/components/schemas/ID'
+
     externalLinkId:
       name: externalLinkId
       in: path
@@ -100,6 +107,7 @@ components:
       description: Unique identifier of an external matter link.
       schema:
         $ref: '#/components/schemas/ID'
+
     noteId:
       name: noteId
       in: path
@@ -107,6 +115,7 @@ components:
       description: Unique identifier of a note.
       schema:
         $ref: '#/components/schemas/ID'
+
     uploadId:
       name: uploadId
       in: path
@@ -114,6 +123,7 @@ components:
       description: Unique identifier of an uploaded file
       schema:
         $ref: '#/components/schemas/ID'
+
     documentId:
       name: documentId
       in: path
@@ -121,6 +131,7 @@ components:
       description: Unique identifier of a managed document.
       schema:
         $ref: '#/components/schemas/ID'
+
     active:
       name: active
       in: query
@@ -128,6 +139,7 @@ components:
       description: Filter to only active matters
       schema:
         type: boolean
+
     q:
       name: q
       in: query
@@ -135,6 +147,7 @@ components:
       description: Full text search argument
       schema:
         type: string
+
     relatedContactPartyId:
       name: partyId
       in: query
@@ -276,6 +289,22 @@ components:
         type: string
         format: uuid
 
+    #
+    # Trust Transaction Params
+    #
+
+    expenseId:
+      name: expenseId
+      in: path
+      required: true
+      description: Unique identifier of a trust expense.
+      schema:
+        $ref: '#/components/schemas/ID'
+
+  #
+  # Schemas
+  #
+
   schemas:
     SystemPartyType:
       type: string
@@ -367,13 +396,19 @@ components:
         systemType:
           $ref: '#/components/schemas/SystemPartyType'
         subType:
-          type: string
-          enum: [ none, company, estate ]
+          $ref: '#/components/schemas/SystemPartySubType'
         cddRequired:
           type: boolean
         cddLevel:
-          type: string
-          enum: [ unknown, simplified, standard, enhanced ] 
+          $ref: '#/components/schemas/CddLevel'
+
+    CddLevel:
+      type: string
+      enum: [ unknown, simplified, standard, enhanced ] 
+
+    SystemPartySubType:
+      type: string
+      enum: [ none, company, estate ]
 
     Party:
       type: object
@@ -1106,8 +1141,7 @@ components:
         title:
           type: string
         schemaType:
-          type: string
-          enum: [ 'matter', 'prompt', 'fragment', 'party' ]
+          $ref: '#/components/schemas/InfoSheetType'
         schemaVersion:
           type: integer
         schemaRevision:
@@ -1118,6 +1152,10 @@ components:
         partyAttachment:
           $ref: '#/components/schemas/PartyAttachment'
           nullable: true
+
+    InfoSheetType:
+      type: string
+      enum: [ 'matter', 'prompt', 'fragment', 'party' ]
 
     MatterAttachment:
       type: object
@@ -1156,6 +1194,226 @@ components:
           items:
             $ref: '#/components/schemas/InfoSheet'
 
+    ExpenseTypeResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: 
+            $ref: '#/components/schemas/ExpenseType'
+
+    ExpenseType:
+      type: object
+      description: |
+        A cost paid out of client trust funds that is incurred on behalf of a client during the course of a matter
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        code:
+          type: string
+          description: Short code used to identify the expense type, e.g. MIL
+        description:
+          type: string
+          description: Description of the type of expense, e.g. Mileage
+        narration:
+          type: string
+          description: The default narration to use on expenses of this type
+        unitPrice:
+          $ref: '#/components/schemas/Money'
+          nullable: true
+        taxQuoteType:
+          $ref: '#/components/schemas/TaxQuoteType'
+        taxability:
+          $ref: '#/components/schemas/Taxability'
+        disbursement:
+          type: boolean
+          description: Disbursements are passed on at cost, expense recoveries may include a margin
+
+    TaxQuoteType:
+      type: string
+      enum: [ exclusive, inclusive ]
+      description: Whether the unit price includes or excludes GST
+
+    Taxability:
+      type: string
+      enum: [ standard, exempt ]
+      description: The type of GST that applies to expenses of this type
+
+    BillingStatus:
+      type: string
+      enum: [ none, drafted, authorised, posted ]
+
+    ExpenseBase:
+      type: object
+      description: |
+        A cost paid out of client trust funds that is incurred on behalf of a client during the course of a matter
+      properties:
+        expenseTypeId:
+          $ref: '#/components/schemas/ID'
+          description: The type of expense to create, which provides defaults for unit price, taxability, narration etc.
+        date:
+          type: string
+          format: date
+          description: The date that the expense occurred (not necessarily the date recorded)
+        narration:
+          type: string
+          description: The file note for the expense
+        reference:
+          type: string
+          description: Short user reference for the expense
+        quantity:
+          type: integer
+          description: Mulitple expenses of the same type can be recorded as a single entry (e.g. photocopying x 5)
+        unitPrice:
+          $ref: '#/components/schemas/Money'
+          description: If the expense type doesn't have a default unit price then one should be provided here
+          nullable: true
+
+    ExpenseCreate:
+      allOf:
+      - $ref: '#/components/schemas/ExpenseBase'
+      - type: object
+        description: |
+          A cost paid out of client trust funds that is incurred on behalf of a client during the course of a matter
+        properties:
+          taxRateId:
+            $ref: '#/components/schemas/ID'
+            description: The tax rate should default to the one that matches the expense type's taxability field, but users are free to change it.
+
+    Expense:
+      allOf:
+      - $ref: '#/components/schemas/ExpenseBase'
+      - type: object
+        description: |
+          A cost paid out of client trust funds that is incurred on behalf of a client during the course of a matter
+        properties:
+          id:
+            $ref: '#/components/schemas/ID'
+          writeOff:
+            $ref: '#/components/schemas/WriteOff'
+          reversal:
+            $ref: '#/components/schemas/Reversal'
+          canDelete:
+            type: boolean
+          canReverse:
+            type: boolean
+
+    WriteOff:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        date:
+          type: string
+          format: date
+          description: The date of the write-off
+        user:
+          type: string
+          description: The initials of the user that did the write-off
+        reason:
+          type: string
+          description: The reason for the write-off
+
+    DeletionCreate:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: The reason for deleting the transaction
+
+    ReversalCreate:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          description: The date that the reversal occurred (not necessarily when it was recorded)
+        reason:
+          type: string
+          description: The reason for reversing the transaction
+
+    Reversal:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        date:
+          type: string
+          format: date
+          description: The date of the reversal
+        user:
+          type: string
+          description: The initials of the user that did the reversal
+        reason:
+          type: string
+          description: The reason for the reversal
+
+    ExpenseResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Expense'
+
+    TaxRateResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: 
+            $ref: '#/components/schemas/TaxRate'
+
+    TaxRate:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        taxGroup:
+          type: string
+          description: RWT, GST, etc
+        taxType:
+          $ref: '#/components/schemas/TaxType'
+        rate:
+          type: number
+        name:
+          type: string
+        effectiveFrom:
+          type: string
+          format: date-time
+          nullable: true
+        active:
+          type: boolean
+
+    TaxType:
+      type: string
+      enum: [ none, standard, exempt, zerorated ]
+
+    # Defined both in API and Webhook spec.
+    # Code generators may need to exclude from one or the other.
+    ResourceRef:
+      type: object
+      required: [ id, number ]
+      properties: 
+        id:
+          type: string
+          format: uuid
+          description: The ID of the resource
+        number:
+          type: string
+          description: The resource's natural key or user reference
+
+    Money:
+      type: object
+      properties:
+        amount:
+          type: number
+        currency:
+          type: string
+
+  #
+  # RESPONSES
+  #
 
   responses:
 
@@ -2345,3 +2603,118 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
 
+  #
+  # GST Rates
+  #
+
+  /gst-rates:
+    get:
+      operationId: getGstRates
+      summary: Get GST rates
+      description: Get current GST rates used on accounting transactions
+      tags: [Codes]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxRateResponse'
+
+  #
+  # Expenses
+  #
+
+  /matters/{matterId}/expenses:
+    post:
+      operationId: saveMatterExpense
+      summary: Create a trust expense
+      description: Post a trust expense to a matter's trust ledger
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      tags: [Trust Expenses]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /matters/{matterId}/expenses/{expenseId}:
+    get:
+      operationId: getMatterExpense
+      summary: Get a matter trust expense
+      description: Get a trust expense from a matter
+      tags: [Trust Expenses]
+      parameters: 
+      - $ref: '#/components/parameters/matterId'
+      - $ref: '#/components/parameters/expenseId'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: deleteMatterExpense
+      summary: Delete a trust expense
+      description: Delete an unbatched trust expense from a matter's trust ledger
+      parameters:
+      - $ref: '#/components/parameters/matterId'
+      - $ref: '#/components/parameters/expenseId'
+      tags: [Trust Expenses]
+      responses:
+        '204':
+          $ref: '#/components/responses/Deleted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /matters/{matterId}/expenses/{expenseId}/reversals:
+    post:
+      operationId: reverseMatterExpense
+      summary: Reverse a trust expense
+      description: Reverse a batched trust expense in a matter's trust ledger
+      parameters:
+      - $ref: '#/components/parameters/idempotencyKey'
+      tags: [Trust Expenses]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReversalCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+        '400':
+          $ref: '#/components/responses/BadRequest'
