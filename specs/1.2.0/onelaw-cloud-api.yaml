@@ -2622,6 +2622,24 @@ paths:
                 $ref: '#/components/schemas/TaxRateResponse'
 
   #
+  # Expense Types
+  #
+
+  /expense-types:
+    get:
+      operationId: getExpenseTypes
+      summary: Get expense types
+      description: Expense types determine the expenses that can be created and include default values
+      tags: [Trust Expenses]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseTypeResponse'
+
+  #
   # Expenses
   #
 
