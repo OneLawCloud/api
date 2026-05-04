@@ -42,6 +42,8 @@ tags:
   description: Global and scoped search endpoints
 - name: InfoSheets
   description: Custom data storage
+- name: Document Assembly
+  description: InfoSheet metadata and values flattened for document assembly integrations
 - name: Users
   description: Staff members who use the software
 - name: Codes
@@ -1466,8 +1468,183 @@ components:
       properties:
         items:
           type: array
-          items: 
+          items:
             $ref: '#/components/schemas/Affiliation'
+
+    #
+    # Matter parties
+    #
+
+    MatterParties:
+      type: object
+      description: |
+        Every party associated with a matter, one entry per role. Where the same party
+        plays multiple roles its full data appears in each entry; only roles with a
+        populated party id are included.
+      properties:
+        matterId:
+          $ref: '#/components/schemas/ID'
+        parties:
+          type: array
+          items:
+            $ref: '#/components/schemas/MatterParty'
+
+    MatterParty:
+      type: object
+      description: A party in one of the named roles on the matter
+      properties:
+        role:
+          $ref: '#/components/schemas/MatterPartyRole'
+        party:
+          $ref: '#/components/schemas/Party'
+          description: Party detail. Same field shape as the response from `GET /parties/{partyId}`.
+
+    MatterPartyRole:
+      type: string
+      description: The role this party plays on the matter
+      enum:
+        - client
+        - counterParty
+        - counterPartyFirmActing
+        - counterPartyLawyerActing
+        - instructingParty
+        - billingParty
+        - arContact
+
+    #
+    # Document Assembly
+    #
+
+    DocumentAssemblyMetadata:
+      type: object
+      description: |
+        Lists every field a matter exposes for document assembly — base `OP.*` fields
+        plus one section per InfoSheet visible on the matter.
+      properties:
+        matterId:
+          $ref: '#/components/schemas/ID'
+        base:
+          type: array
+          description: Matter / client / firm fields derived from OneAuthor's DocumentMetaData
+          items:
+            $ref: '#/components/schemas/DocumentAssemblyMetadataField'
+        infoSheets:
+          type: array
+          description: One entry per InfoSheet visible on the matter (attached or auto-attach candidate)
+          items:
+            $ref: '#/components/schemas/DocumentAssemblyMetadataInfoSheet'
+
+    DocumentAssemblyMetadataField:
+      type: object
+      description: A single field that can appear in `/values` for this matter
+      properties:
+        key:
+          type: string
+          description: The dotted key the field is published under in `/values`
+        label:
+          type: string
+        dataType:
+          type: string
+          description: Field data type — e.g. `String`, `Number`, `Boolean`, `Date`, `Choice`
+        required:
+          type: boolean
+          nullable: true
+        conditional:
+          $ref: '#/components/schemas/DocumentAssemblyMetadataConditional'
+          nullable: true
+        block:
+          $ref: '#/components/schemas/DocumentAssemblyMetadataBlock'
+          nullable: true
+        choices:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/DocumentAssemblyMetadataChoice'
+
+    DocumentAssemblyMetadataInfoSheet:
+      type: object
+      description: One InfoSheet visible on the matter, with the fields it contributes
+      properties:
+        title:
+          type: string
+        mergeFieldPrefix:
+          type: string
+          description: The prefix every key in `fields` shares
+        attached:
+          type: boolean
+          description: |
+            True if the InfoSheet has a CustomDataInstance attached to this matter (i.e.
+            an administrator or user has filled it in or it is otherwise persisted).
+            False for auto-attach candidates that match the matter's fee type but have
+            no instance yet — in which case the InfoSheet's keys appear in /metadata
+            but produce no values in /values.
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentAssemblyMetadataField'
+
+    DocumentAssemblyMetadataConditional:
+      type: object
+      description: Visibility condition for a field
+      properties:
+        fieldKey:
+          type: string
+          description: Key of the field that controls this field's visibility
+        type:
+          type: string
+          description: Condition type — e.g. `ChoiceValue`, `Truthy`
+        choiceValues:
+          type: array
+          nullable: true
+          items:
+            type: string
+
+    DocumentAssemblyMetadataBlock:
+      type: object
+      description: |
+        Repeating block descriptor. Fields under a block appear once per block instance
+        in /values. Block keys use `[]` to denote the per-instance suffix, which is
+        replaced with `[<n>]` (1-based) in /values.
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        minimumCount:
+          type: integer
+        maximumCount:
+          type: integer
+          nullable: true
+        parentBlockKey:
+          type: string
+          nullable: true
+
+    DocumentAssemblyMetadataChoice:
+      type: object
+      description: A single choice in a Choice-typed field
+      properties:
+        displayValue:
+          type: string
+        additionalValues:
+          type: array
+          nullable: true
+          items:
+            type: string
+        isDefault:
+          type: boolean
+          nullable: true
+
+    DocumentAssemblyValues:
+      type: object
+      description: Flat dictionary of values for a matter, keyed identically to mail-merge
+      properties:
+        matterId:
+          $ref: '#/components/schemas/ID'
+        values:
+          type: object
+          description: Map of field key to its string-formatted value
+          additionalProperties:
+            type: string
 
   #
   # RESPONSES
@@ -2815,3 +2992,75 @@ paths:
                 $ref: '#/components/schemas/Expense'
         '400':
           $ref: '#/components/responses/BadRequest'
+
+  #
+  # Matter parties
+  #
+
+  /matters/{matterId}/parties:
+    parameters:
+    - $ref: '#/components/parameters/matterId'
+    get:
+      operationId: getMatterParties
+      summary: Get every party associated with a matter
+      description: |
+        Returns every party associated with the matter (the same set surfaced by
+        document-assembly under `OP.Matter.*`) with the same field shape as
+        `GET /parties/{partyId}`.
+      tags: [Matters]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatterParties'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # Document Assembly
+  #
+
+  /documentassemblydata/matters/{matterId}/metadata:
+    parameters:
+    - $ref: '#/components/parameters/matterId'
+    get:
+      operationId: getDocumentAssemblyMetadata
+      summary: Get the document-assembly field metadata for a matter
+      description: |
+        Returns the schema of every field a matter exposes — base `OP.*` fields plus one
+        section per InfoSheet visible on the matter. Use this to enumerate every key that
+        `GET /documentassemblydata/matters/{matterId}/values` could produce.
+      tags: [Document Assembly]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentAssemblyMetadata'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /documentassemblydata/matters/{matterId}/values:
+    parameters:
+    - $ref: '#/components/parameters/matterId'
+    get:
+      operationId: getDocumentAssemblyValues
+      summary: Get the document-assembly values for a matter
+      description: |
+        Returns a flat dictionary of values keyed identically to mail-merge. Every key
+        in the response is reachable from `/metadata` after applying two documented
+        collapse rules: `[<n>]` → `[]` for block instances, and stripping a trailing
+        `.Value1`..`.Value10` for Choice fields.
+      tags: [Document Assembly]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentAssemblyValues'
+        '404':
+          $ref: '#/components/responses/NotFound'
