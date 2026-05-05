@@ -6,7 +6,8 @@ info:
   license: 
     name: MIT
     url: https://opensource.org/licenses/MIT
-  description: |
+      
+  description: >
     OneLaw Cloud provides a RESTful interface for managing parties, clients, matters, and time entries for law firms.
 
 tags:
@@ -24,8 +25,6 @@ tags:
   description: Text notes on Matters
 - name: Time Entries
   description: Billable or time recorded against legal matters by users
-- name: Trust Expenses
-  description: Costs paid out of client trust funds incurred on behalf of a client during the course of a matter
 - name: Matter External Links
   description: Links between OneLaw matters and workspaces in 3rd party services
 - name: External Links
@@ -38,12 +37,10 @@ tags:
   description: Documents managed in a structured library
 - name: Document Versions
   description: Tracking document changes over time
-- name: Search
-  description: Global and scoped search endpoints
-- name: InfoSheets
-  description: Custom data storage
 - name: Document Assembly
   description: InfoSheet metadata and values flattened for document assembly integrations
+- name: Search
+  description: Global and scoped search endpoints
 - name: Users
   description: Staff members who use the software
 - name: Codes
@@ -52,24 +49,24 @@ tags:
   description: API status checks
 
 security:
-- oauth2:
-  - "https://onepracticecloud.onmicrosoft.com/olc-api/access_as_user"
+- OAuth2:
+  - access_as_user
 
 components:
   securitySchemes:
-    oauth2:
+    OAuth2:
       type: oauth2
       flows:
         authorizationCode:
-          authorizationUrl: "https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/B2C_1_si_api/oauth2/v2.0/authorize"
-          tokenUrl:         "https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/B2C_1_si_api/oauth2/v2.0/token"
+          authorizationUrl: https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/oauth2/v2.0/authorize?p=b2c_1_si
+          tokenUrl:         https://onepracticecloud.b2clogin.com/onepracticecloud.onmicrosoft.com/oauth2/v2.0/token?p=b2c_1_si
           scopes:
-            "https://onepracticecloud.onmicrosoft.com/olc-api/access_as_user": "Access the OneLaw Cloud API as the signed-in user."
-            "openid": "Request an ID token (OIDC)."
-            "offline_access": "Request a refresh token."
+            openid:         OpenID Connect ID token
+            profile:        Basic user info
+            access_as_user: Access resources impersonating user
+            offline_access: Refresh tokens
 
   parameters:
-
     partyId:
       name: partyId
       in: path
@@ -77,7 +74,6 @@ components:
       description: Unique identifier of a party.
       schema:
         $ref: '#/components/schemas/ID'
-
     clientId:
       name: clientId
       in: path
@@ -85,7 +81,6 @@ components:
       description: Unique identifier of a client.
       schema:
         $ref: '#/components/schemas/ID'
-
     matterId:
       name: matterId
       in: path
@@ -93,7 +88,6 @@ components:
       description: Unique identifier of a matter.
       schema:
         $ref: '#/components/schemas/ID'
-
     timeEntryId:
       name: timeEntryId
       in: path
@@ -101,7 +95,6 @@ components:
       description: Unique identifier of a time entry.
       schema:
         $ref: '#/components/schemas/ID'
-
     externalLinkId:
       name: externalLinkId
       in: path
@@ -109,7 +102,6 @@ components:
       description: Unique identifier of an external matter link.
       schema:
         $ref: '#/components/schemas/ID'
-
     noteId:
       name: noteId
       in: path
@@ -117,7 +109,6 @@ components:
       description: Unique identifier of a note.
       schema:
         $ref: '#/components/schemas/ID'
-
     uploadId:
       name: uploadId
       in: path
@@ -125,7 +116,6 @@ components:
       description: Unique identifier of an uploaded file
       schema:
         $ref: '#/components/schemas/ID'
-
     documentId:
       name: documentId
       in: path
@@ -133,7 +123,6 @@ components:
       description: Unique identifier of a managed document.
       schema:
         $ref: '#/components/schemas/ID'
-
     active:
       name: active
       in: query
@@ -141,7 +130,6 @@ components:
       description: Filter to only active matters
       schema:
         type: boolean
-
     q:
       name: q
       in: query
@@ -149,7 +137,6 @@ components:
       description: Full text search argument
       schema:
         type: string
-
     relatedContactPartyId:
       name: partyId
       in: query
@@ -184,6 +171,7 @@ components:
       schema:
         type: integer
         default: 0
+        minimum: 0
 
     #
     # Idempotency
@@ -260,57 +248,10 @@ components:
           $ref: '#/components/schemas/WellKnownDocumentType'
       explode: false
 
-    #
-    # InfoSheet Params
-    #
-
-    feeTypeId:
-      name: feeTypeId
-      in: query
-      description: Fee type
-      required: false
-      schema:
-        type: string
-        format: uuid
-
-    partyTypeId:
-      name: partyTypeId
-      in: query
-      description: Party type
-      required: false
-      schema:
-        type: string
-        format: uuid
-
-    infoSheetId:
-      name: infoSheetId
-      in: query
-      description: InfoSheet ID
-      required: true
-      schema:
-        type: string
-        format: uuid
-
-    #
-    # Trust Transaction Params
-    #
-
-    expenseId:
-      name: expenseId
-      in: path
-      required: true
-      description: Unique identifier of a trust expense.
-      schema:
-        $ref: '#/components/schemas/ID'
-
-  #
-  # Schemas
-  #
-
   schemas:
     SystemPartyType:
       type: string
-      enum: [natural, legal, multi, firm, office]
+      enum: [natural, legal, multi]
 
     PartyRole:
       type: string
@@ -391,26 +332,10 @@ components:
     PartyType:
       type: object
       properties:
-        id:
-          $ref: '#/components/schemas/ID'
         name:
           type: string
         systemType:
           $ref: '#/components/schemas/SystemPartyType'
-        subType:
-          $ref: '#/components/schemas/SystemPartySubType'
-        cddRequired:
-          type: boolean
-        cddLevel:
-          $ref: '#/components/schemas/CddLevel'
-
-    CddLevel:
-      type: string
-      enum: [ unknown, simplified, standard, enhanced ] 
-
-    SystemPartySubType:
-      type: string
-      enum: [ none, company, estate ]
 
     Party:
       type: object
@@ -475,6 +400,26 @@ components:
           format: date
           nullable: true
           description: The month that is currently being processed by the firm, expressed as the date of first day of the local calendar month (not UTC)
+
+    ExternalLinkCreate:
+      type: object
+      properties:
+        url:
+          type: string
+          format: url
+          description: A URL to vendor-hosted workspace linked to this matter.
+        status:
+          type: string
+          description: A vendor-specific status indicator
+
+    ExternalLink:
+      allOf:
+      - $ref: '#/components/schemas/ExternalLinkCreate'
+      - type: object
+        properties:
+          id:
+            type: string
+            format: uuid
 
     Person:
       allOf:
@@ -566,6 +511,17 @@ components:
           nullable: false
           description: The user's user name.
 
+    MatterClient:
+      allOf:
+      - $ref: '#/components/schemas/ResourceRef'
+      - type: object
+        description: Client and party references on a matter
+        required: [party]
+        properties:
+          party:
+            $ref: '#/components/schemas/ResourceRef'
+            nullable: false
+
     Matter:
       type: object
       required: [id, number, accountNumber, description, created, subFeeTypeId]
@@ -579,6 +535,8 @@ components:
           type: integer
           description: The user-visible number used to refer to the matter.
           readOnly: true
+        client:
+          $ref: '#/components/schemas/MatterClient'
         accountNumber:
           type: string
           description: Widely used user-reference including the client and matter numbers together.
@@ -686,14 +644,14 @@ components:
               type: string
               format: uuid
               description: The id of the user who the time is recorded for.
-            judged:
-              type: boolean
-              description: Whether or not the value of the time entry was judged.
             timeRateId:
               type: string
               format: uuid
               nullable: true
-              description: The ID of the rate used to bill this time, or null for value WIP
+              description: The ID of the rate used to bill this time. Null for value-based WIP entries.
+            judged:
+              type: boolean
+              description: Whether or not the value of the time entry was judged.
 
     WipCode:
       type: object
@@ -753,14 +711,6 @@ components:
           type: string
           format: date-time
           description: The latest time that any parties were updated. If this changes between loading pages then consider restarting or catching up with updatedAfter filter.
-
-    PartyTypeResponse:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/PartyType'
 
     RelatedContactResponse:
       type: object
@@ -829,26 +779,6 @@ components:
           format: uuid
         name:
           type: string
-
-    ExternalLinkCreate:
-      type: object
-      properties:
-        url:
-          type: string
-          format: url
-          description: A URL to vendor-hosted workspace linked to this matter.
-        status:
-          type: string
-          description: A vendor-specific status indicator
-
-    ExternalLink:
-      allOf:
-      - $ref: '#/components/schemas/ExternalLinkCreate'
-      - type: object
-        properties:
-          id:
-            type: string
-            format: uuid
 
     Error:
       type: object
@@ -963,13 +893,20 @@ components:
             description: The user reference for the document
           fileName:
             type: string
-            description: The file name extension of the document
+            description: The file name and extension of the document
           mimeType:
             type: string
             description: The MIME type for the file if known
           created:
             type: string
             format: date-time
+          updated:
+            type: string
+            format: date-time
+          sentReceived:
+            type: string
+            format: date-time
+            nullable: true
           type:
             $ref: '#/components/schemas/WellKnownDocumentType'
           contentUrl:
@@ -980,7 +917,7 @@ components:
               URL that can be used to download the file contents for this document.
               Clients MUST treat this URL as opaque and MUST NOT construct it
               themselves. Its value may change over time.
-    
+
     DocumentResponse:
       type: object
       properties:
@@ -991,6 +928,20 @@ components:
         total:
           type: integer
           description: The total number of results available to be paged through
+
+    DocumentRevisionCreate:
+      type: object
+      required: [ source ]
+      properties:
+        source:
+          $ref: '#/components/schemas/DocumentSource'
+
+    DocumentRevision:
+      type: object
+      properties:
+        revision:
+          type: integer
+          description: The revision number
 
     DocumentVersionCreate:
       type: object
@@ -1134,269 +1085,12 @@ components:
       type: string
       format: uuid
 
-    InfoSheet:
-      type: object
-      description: Form definition with custom data fields
-      properties:
-        id:
-          $ref: '#/components/schemas/ID'
-        title:
-          type: string
-        schemaType:
-          $ref: '#/components/schemas/InfoSheetType'
-        schemaVersion:
-          type: integer
-        schemaRevision:
-          type: integer
-        matterAttachment:
-          $ref: '#/components/schemas/MatterAttachment'
-          nullable: true
-        partyAttachment:
-          $ref: '#/components/schemas/PartyAttachment'
-          nullable: true
-
-    InfoSheetType:
-      type: string
-      enum: [ 'matter', 'prompt', 'fragment', 'party' ]
-
-    MatterAttachment:
-      type: object
-      description: Options for attaching infosheets to matters
-      properties:
-        autoAttach:
-          type: boolean
-        allowAny:
-          type: boolean
-        feeTypes:
-          type: array
-          items:
-            $ref: '#/components/schemas/FeeType'
-
-    PartyAttachment:
-      type: object
-      description: Options for attaching infosheets to matters
-      properties:
-        autoAttach:
-          type: boolean
-        allowAny:
-          type: boolean
-        clientOnly:
-          type: boolean
-        partyTypes:
-          type: array
-          items:
-            $ref: '#/components/schemas/PartyType'
-
-    InfoSheetList:
-      type: object
-      description: List of infosheets
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/InfoSheet'
-
-    ExpenseTypeResponse:
-      type: object
-      properties:
-        items:
-          type: array
-          items: 
-            $ref: '#/components/schemas/ExpenseType'
-
-    ExpenseType:
-      type: object
-      description: |
-        A cost paid out of client trust funds that is incurred on behalf of a client during the course of a matter
-      properties:
-        id:
-          $ref: '#/components/schemas/ID'
-        code:
-          type: string
-          description: Short code used to identify the expense type, e.g. MIL
-        description:
-          type: string
-          description: Description of the type of expense, e.g. Mileage
-        narration:
-          type: string
-          description: The default narration to use on expenses of this type
-        unitPrice:
-          $ref: '#/components/schemas/Money'
-          nullable: true
-        taxQuoteType:
-          $ref: '#/components/schemas/TaxQuoteType'
-        taxability:
-          $ref: '#/components/schemas/Taxability'
-        disbursement:
-          type: boolean
-          description: Disbursements are passed on at cost, expense recoveries may include a margin
-
-    TaxQuoteType:
-      type: string
-      enum: [ exclusive, inclusive ]
-      description: Whether the unit price includes or excludes GST
-
-    Taxability:
-      type: string
-      enum: [ standard, exempt ]
-      description: The type of GST that applies to expenses of this type
-
-    BillingStatus:
-      type: string
-      enum: [ none, drafted, authorised, posted ]
-
-    ExpenseBase:
-      type: object
-      description: |
-        A cost paid out of client trust funds that is incurred on behalf of a client during the course of a matter
-      properties:
-        expenseTypeId:
-          $ref: '#/components/schemas/ID'
-          description: The type of expense to create, which provides defaults for unit price, taxability, narration etc.
-        date:
-          type: string
-          format: date
-          description: The date that the expense occurred (not necessarily the date recorded)
-        narration:
-          type: string
-          description: The file note for the expense
-        reference:
-          type: string
-          description: Short user reference for the expense
-        quantity:
-          type: integer
-          description: Mulitple expenses of the same type can be recorded as a single entry (e.g. photocopying x 5)
-        unitPrice:
-          $ref: '#/components/schemas/Money'
-          description: If the expense type doesn't have a default unit price then one should be provided here
-          nullable: true
-
-    ExpenseCreate:
-      allOf:
-      - $ref: '#/components/schemas/ExpenseBase'
-      - type: object
-        description: |
-          A cost paid out of client trust funds that is incurred on behalf of a client during the course of a matter
-        properties:
-          taxRateId:
-            $ref: '#/components/schemas/ID'
-            description: The tax rate should default to the one that matches the expense type's taxability field, but users are free to change it.
-
-    Expense:
-      allOf:
-      - $ref: '#/components/schemas/ExpenseBase'
-      - type: object
-        description: |
-          A cost paid out of client trust funds that is incurred on behalf of a client during the course of a matter
-        properties:
-          id:
-            $ref: '#/components/schemas/ID'
-          writeOff:
-            $ref: '#/components/schemas/WriteOff'
-          reversal:
-            $ref: '#/components/schemas/Reversal'
-          canDelete:
-            type: boolean
-          canReverse:
-            type: boolean
-
-    WriteOff:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/ID'
-        date:
-          type: string
-          format: date
-          description: The date of the write-off
-        user:
-          type: string
-          description: The initials of the user that did the write-off
-        reason:
-          type: string
-          description: The reason for the write-off
-
-    DeletionCreate:
-      type: object
-      properties:
-        reason:
-          type: string
-          description: The reason for deleting the transaction
-
-    ReversalCreate:
-      type: object
-      properties:
-        date:
-          type: string
-          format: date
-          description: The date that the reversal occurred (not necessarily when it was recorded)
-        reason:
-          type: string
-          description: The reason for reversing the transaction
-
-    Reversal:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/ID'
-        date:
-          type: string
-          format: date
-          description: The date of the reversal
-        user:
-          type: string
-          description: The initials of the user that did the reversal
-        reason:
-          type: string
-          description: The reason for the reversal
-
-    ExpenseResponse:
-      type: object
-      properties:
-        items:
-          type: array
-          items: 
-            $ref: '#/components/schemas/Expense'
-
-    TaxRateResponse:
-      type: object
-      properties:
-        items:
-          type: array
-          items: 
-            $ref: '#/components/schemas/TaxRate'
-
-    TaxRate:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/ID'
-        taxGroup:
-          type: string
-          description: RWT, GST, etc
-        taxType:
-          $ref: '#/components/schemas/TaxType'
-        rate:
-          type: number
-        name:
-          type: string
-        effectiveFrom:
-          type: string
-          format: date-time
-          nullable: true
-        active:
-          type: boolean
-
-    TaxType:
-      type: string
-      enum: [ none, standard, exempt, zeroRated ]
-
     # Defined both in API and Webhook spec.
     # Code generators may need to exclude from one or the other.
     ResourceRef:
       type: object
       required: [ id, number ]
-      properties: 
+      properties:
         id:
           type: string
           format: uuid
@@ -1404,72 +1098,6 @@ components:
         number:
           type: string
           description: The resource's natural key or user reference
-
-    Money:
-      type: object
-      properties:
-        amount:
-          type: number
-        currency:
-          type: string
-
-    Affiliation:
-      type: object
-      description: A legal relationship between a known party and a related party, described from each party's perspective
-      required: [ knownParty, relatedParty ]
-      anyOf:
-      - required: [ knownRole ]
-      - required: [ relatedRole ]
-      properties:
-        knownParty:
-          $ref: '#/components/schemas/ResourceRef'
-          description: The party that this affiliation was loaded for (ids only for brevity)
-        knownRole:
-          $ref: '#/components/schemas/RelationshipRole'
-          description: The affiliation described from the perspective of the known party
-        relatedParty:
-          $ref: '#/components/schemas/Party'
-          description: The party that is affiliated with the known party
-        relatedRole:
-          $ref: '#/components/schemas/RelationshipRole'
-          description: The affiliation described from the perspective of the related party
-
-    RelationshipRole:
-      type: object
-      required: [ code, description, type, usage, cascadeCddRequirements ]
-      description: A role that a party plays in a relationship, e.g. father, instructing party, or trustee.
-      properties:
-        code:
-          type: string
-          description: The code identifying the role
-        description:
-          type: string
-          description: The display name of the role
-        type:
-          $ref: '#/components/schemas/SystemRelationshipType'
-          description: Some roles are well-known to the system so they can be used in business logic
-        usage:
-          $ref: '#/components/schemas/RelationshipUsage'
-          description: Some roles are used to indicate affiliations, others are non-affiliate relationships
-        cascadeCddRequirements:
-          type: boolean
-          description: Indicates whether CDD requirements cascade through this affiliation type
-
-    RelationshipUsage:
-      type: string
-      enum: [ none, affiliation ]
-
-    SystemRelationshipType:
-      type: string
-      enum: [ custom, funderOfClient, clientOfFunder, instructingPartyOfClient, clientOfInstructingParty ]
-
-    AffiliationResponse:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Affiliation'
 
     #
     # Matter parties
@@ -1646,11 +1274,21 @@ components:
           additionalProperties:
             type: string
 
-  #
-  # RESPONSES
-  #
-
   responses:
+
+    UnprocessableContent:
+      description: Unprocessable Content
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
 
     NotFound:
       description: Resource not found.
@@ -1710,6 +1348,8 @@ paths:
                 $ref: '#/components/schemas/DocumentCategories'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   #
   # Matter document categories
@@ -1732,6 +1372,8 @@ paths:
                 $ref: '#/components/schemas/DocumentCategories'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   #
   # Document upload
@@ -1808,6 +1450,10 @@ paths:
                 $ref: '#/components/schemas/Upload'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableContent'
 
   #
   # Manage document at party level
@@ -1833,6 +1479,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DocumentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
     post:
@@ -1865,6 +1513,8 @@ paths:
                 $ref: '#/components/schemas/Document'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   #
   # Manage document at matter level
@@ -1890,6 +1540,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DocumentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
     post:
@@ -1922,6 +1574,8 @@ paths:
                 $ref: '#/components/schemas/Document'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   #
   # Document get and delete
@@ -1933,7 +1587,7 @@ paths:
       summary: Get document
       description: Get document metadata and download link
       tags: [Document Library]
-      parameters: 
+      parameters:
       - $ref: '#/components/parameters/documentId'
       responses:
         '200':
@@ -1941,7 +1595,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentResponse'
+                $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
     delete:
@@ -1951,16 +1607,77 @@ paths:
       tags: [Document Library]
       parameters:
       - $ref: '#/components/parameters/documentId'
-      responses: 
+      responses:
         '204':
-          $ref: '#/components/responses/Deleted'
+          description: Successfully deleted
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /documents/{documentId}/content:
+    get:
+      operationId: getDocumentContent
+      summary: Download document content
+      description: |
+        Stream the binary content of a managed document. The response Content-Type
+        reflects the document's file type, and Content-Disposition carries the filename.
+      tags: [Document Library]
+      parameters:
+      - $ref: '#/components/parameters/documentId'
+      responses:
+        '200':
+          description: Document file stream.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # Document Revisions
+  #
+
+  /documents/{documentId}/revisions: 
+    post:
+      operationId: createDocumentRevision
+      summary: Save changes to an existing document, limited file type support.
+      description: |
+        Save changes made to an existing document keeping the same document ID and 
+        without creating a new version. Only supported for DOCX and XLSX files.
+      tags: [Document Library]
+      parameters: 
+        - $ref: '#/components/parameters/documentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentRevisionCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentRevision'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   #
   # Document Versions
   # 
+
   /documents/{documentId}/versions: 
     get:
       operationId: getDocumentVersions
@@ -1976,6 +1693,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DocumentVersionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
     post:
@@ -2006,6 +1725,8 @@ paths:
                 $ref: '#/components/schemas/Document'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   #
   # Utility
@@ -2115,26 +1836,6 @@ paths:
           $ref: '#/components/responses/BadRequest'
 
   #
-  # Party Types
-  #
-
-  /party-types:
-    get:
-      operationId: getPartyTypes
-      summary: Get all party types
-      description: Firms can define the types of party the work with
-      tags: [ Parties ]
-      responses:
-        '200':
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartyTypeResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-
-  #
   # Parties
   #
 
@@ -2177,6 +1878,10 @@ paths:
                 $ref: '#/components/schemas/PartyPagedResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableContent'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /parties/{partyId}:
     parameters:
@@ -2192,27 +1897,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Party'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  #
-  # Affiliated Parties
-  #
-
-  /parties/{partyId}/affiliations:
-    parameters:
-    - $ref: '#/components/parameters/partyId'
-    get:
-      operationId: getPartyAffiliations
-      summary: List parties affiliated with this party
-      tags: [Parties]
-      responses:
-        '200':
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AffiliationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -2281,6 +1967,8 @@ paths:
                 $ref: '#/components/schemas/RelatedContactResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   #
   # Party Notes
@@ -2303,6 +1991,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Note'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -2335,6 +2025,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableContent'
 
   /parties/{partyId}/notes/{noteId}:
     get:
@@ -2410,7 +2102,9 @@ paths:
                 $ref: '#/components/schemas/ClientPagedResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
-            
+        '422':
+          $ref: '#/components/responses/UnprocessableContent'
+
   /clients/{clientId}:
     parameters:
       - $ref: '#/components/parameters/clientId'
@@ -2428,6 +2122,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Client'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -2471,6 +2167,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Matter'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -2490,6 +2188,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Note'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
     post:
@@ -2537,6 +2237,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Note'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
     put:
@@ -2556,6 +2258,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Note'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
     delete:
@@ -2565,6 +2269,8 @@ paths:
       responses:
         '204':
           $ref: '#/components/responses/Deleted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
       
@@ -2601,6 +2307,9 @@ paths:
       summary: Get all time entries for a matter
       description: Regular time entries recorded on matters that will be billed.
       tags: [Time Entries]
+      parameters: 
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
       responses:
         '200':
           description: Successful response.
@@ -2610,6 +2319,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TimeEntry'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -2664,334 +2375,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TimeEntry'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  #
-  # Matter External Links
-  #
-
-  /matters/{matterId}/external-links:
-    parameters:
-      - $ref: '#/components/parameters/matterId'
-    get:
-      operationId: getMatterExternalLinks
-      summary: Get all external links for a matter
-      description: Links between matters and workspaces in 3rd party web services
-      tags: [ Matter External Links ]
-      responses:
-        '200':
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ExternalLink'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-    post:
-      operationId: saveMatterExternalLink
-      parameters:
-      - $ref: '#/components/parameters/idempotencyKey'
-      summary: Link a matter to an external system.
-      tags: [ Matter External Links ]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExternalLinkCreate'
-      responses:
-        '201':
-          description: Created
-          headers:
-            Location:
-              description: URL of the new resource.
-              schema:
-                type: string
-                format: uri
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExternalLink'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
-
-  #
-  # External Links - Canonical
-  #
-
-  /external-links/{externalLinkId}:
-    parameters:
-      - $ref: '#/components/parameters/externalLinkId'
-    get:
-      operationId: getExternalLink
-      summary: Get an existing external link
-      tags: [ External Links ]
-      responses: 
-        '200':
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExternalLink'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    put:
-      operationId: updateExternalLink
-      summary: Update an existing external link
-      tags: [ External Links ]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExternalLinkCreate'
-      responses: 
-        '200':
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExternalLink'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    delete:
-      operationId: deleteExternalLink
-      summary: Delete an external link
-      tags: [ External Links ]
-      responses: 
-        '204':
-          $ref: '#/components/responses/Deleted'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  #
-  # InfoSheets
-  #
-
-  /infosheets:
-    parameters:
-    - $ref: '#/components/parameters/partyTypeId'
-    - $ref: '#/components/parameters/feeTypeId'
-    get:
-      operationId: getInfosheets
-      summary: Get all InfoSheets available 
-      description: Forms with custom fields that can be attached to parties by type or matters by fee type
-      tags: [ InfoSheets ]
-      responses:
-        '200':
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InfoSheetList'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-
-  /infosheets/{infoSheetId}:
-    parameters:
-    - $ref: '#/components/parameters/infoSheetId'
-    get:
-      operationId: getInfosheet
-      summary: Get an InfoSheet
-      description: Form with custom fields that can be attached to parties by type or matters by fee type
-      tags: [ InfoSheets ]
-      responses:
-        '200':
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InfoSheet'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-
-  /infosheets/{infoSheetId}/schema:
-    parameters:
-    - $ref: '#/components/parameters/infoSheetId'
-    get:
-      operationId: getInfosheetSchema
-      summary: Get an InfoSheet schema definition
-      description: Formal definition of the schema of fields defined in the InfoSheet
-      tags: [ InfoSheets ]
-      responses:
-        '200':
-          description: Successful response.
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-
-  /parties/{partyId}/infosheets/{infoSheetId}/data:
-    get:
-      operationId: getPartyInfoSheetData
-      summary: Party InfoSheet data
-      description: Get the data from an InfoSheet attached to a party
-      tags: [ InfoSheets ]
-      parameters: 
-      - $ref: '#/components/parameters/partyId'
-      - $ref: '#/components/parameters/infoSheetId'
-      responses:
-        '200':
-          description: Successful response.
-        '400':
-          $ref: '#/components/responses/BadRequest'
-
-
-  /matters/{matterId}/infosheets/{infoSheetId}/data:
-    get:
-      operationId: getMatterInfoSheetData
-      summary: Matter InfoSheet data
-      description: Get the data from an InfoSheet attached to a matter
-      tags: [ InfoSheets ]
-      parameters: 
-      - $ref: '#/components/parameters/matterId'
-      - $ref: '#/components/parameters/infoSheetId'
-      responses:
-        '200':
-          description: Successful response.
-        '400':
-          $ref: '#/components/responses/BadRequest'
-
-  #
-  # GST Rates
-  #
-
-  /gst-rates:
-    get:
-      operationId: getGstRates
-      summary: Get GST rates
-      description: Get current GST rates used on accounting transactions
-      tags: [Codes]
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TaxRateResponse'
-
-  #
-  # Expense Types
-  #
-
-  /expense-types:
-    get:
-      operationId: getExpenseTypes
-      summary: Get expense types
-      description: Expense types determine the expenses that can be created and include default values
-      tags: [Trust Expenses]
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExpenseTypeResponse'
-
-  #
-  # Expenses
-  #
-
-  /matters/{matterId}/expenses:
-    post:
-      operationId: saveMatterExpense
-      summary: Create a trust expense
-      description: Post a trust expense to a matter's trust ledger
-      parameters:
-      - $ref: '#/components/parameters/idempotencyKey'
-      tags: [Trust Expenses]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExpenseCreate'
-      responses:
-        '201':
-          description: Created
-          headers:
-            Location:
-              description: URL of the new resource.
-              schema:
-                type: string
-                format: uri
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Expense'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-
-  /matters/{matterId}/expenses/{expenseId}:
-    get:
-      operationId: getMatterExpense
-      summary: Get a matter trust expense
-      description: Get a trust expense from a matter
-      tags: [Trust Expenses]
-      parameters: 
-      - $ref: '#/components/parameters/matterId'
-      - $ref: '#/components/parameters/expenseId'
-      responses:
-        '200':
-          description: Successful response.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Expense'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    delete:
-      operationId: deleteMatterExpense
-      summary: Delete a trust expense
-      description: Delete an unbatched trust expense from a matter's trust ledger
-      parameters:
-      - $ref: '#/components/parameters/matterId'
-      - $ref: '#/components/parameters/expenseId'
-      tags: [Trust Expenses]
-      responses:
-        '204':
-          $ref: '#/components/responses/Deleted'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /matters/{matterId}/expenses/{expenseId}/reversals:
-    post:
-      operationId: reverseMatterExpense
-      summary: Reverse a trust expense
-      description: Reverse a batched trust expense in a matter's trust ledger
-      parameters:
-      - $ref: '#/components/parameters/idempotencyKey'
-      tags: [Trust Expenses]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReversalCreate'
-      responses:
-        '201':
-          description: Created
-          headers:
-            Location:
-              description: URL of the new resource.
-              schema:
-                type: string
-                format: uri
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Expense'
-        '400':
-          $ref: '#/components/responses/BadRequest'
 
   #
   # Matter parties
@@ -3062,5 +2449,106 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DocumentAssemblyValues'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # Matter External Links
+  #
+
+  /matters/{matterId}/external-links:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
+    get:
+      operationId: getMatterExternalLinks
+      summary: Get all external links for a matter
+      description: Links between matters and workspaces in 3rd party web services
+      tags: [ Matter External Links ]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalLink'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      operationId: saveMatterExternalLink
+      summary: Link a matter to an external system.
+      tags: [ Matter External Links ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalLinkCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new resource.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalLink'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # External Links - Canonical
+  #
+
+  /external-links/{externalLinkId}:
+    parameters:
+      - $ref: '#/components/parameters/externalLinkId'
+    get:
+      operationId: getExternalLink
+      summary: Get an existing external link
+      tags: [ External Links ]
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalLink'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      operationId: updateExternalLink
+      summary: Update an existing external link
+      tags: [ External Links ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalLinkCreate'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalLink'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: deleteExternalLink
+      summary: Delete an external link
+      tags: [ External Links ]
+      responses:
+        '204':
+          $ref: '#/components/responses/Deleted'
         '404':
           $ref: '#/components/responses/NotFound'
