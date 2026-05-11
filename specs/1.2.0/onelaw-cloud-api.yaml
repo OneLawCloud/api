@@ -1436,7 +1436,7 @@ components:
             $ref: '#/components/schemas/DocumentAssemblyMetadataField'
         infoSheets:
           type: array
-          description: One entry per InfoSheet visible on the matter (attached or auto-attach candidate)
+          description: One entry per InfoSheet attached to the matter
           items:
             $ref: '#/components/schemas/DocumentAssemblyMetadataInfoSheet'
 
@@ -1469,21 +1469,13 @@ components:
 
     DocumentAssemblyMetadataInfoSheet:
       type: object
-      description: One InfoSheet visible on the matter, with the fields it contributes
+      description: One InfoSheet attached to the matter, with the fields it contributes
       properties:
         title:
           type: string
         mergeFieldPrefix:
           type: string
           description: The prefix every key in `fields` shares
-        attached:
-          type: boolean
-          description: |
-            True if the InfoSheet has a CustomDataInstance attached to this matter (i.e.
-            an administrator or user has filled it in or it is otherwise persisted).
-            False for auto-attach candidates that match the matter's fee type but have
-            no instance yet — in which case the InfoSheet's keys appear in /metadata
-            but produce no values in /values.
         fields:
           type: array
           items:
