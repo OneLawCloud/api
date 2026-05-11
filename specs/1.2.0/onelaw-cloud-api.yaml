@@ -1425,7 +1425,7 @@ components:
       type: object
       description: |
         Lists every field a matter exposes for document assembly — base `OP.*` fields
-        plus one section per InfoSheet visible on the matter.
+        plus one section per InfoSheet attached to the matter.
       properties:
         matterId:
           $ref: '#/components/schemas/ID'
@@ -2687,7 +2687,7 @@ paths:
       summary: Get the document-assembly field metadata for a matter
       description: |
         Returns the schema of every field a matter exposes — base `OP.*` fields plus one
-        section per InfoSheet visible on the matter. Use this to enumerate every key that
+        section per InfoSheet attached to the matter. Use this to enumerate every key that
         `GET /documentassemblydata/matters/{matterId}/values` could produce.
       tags: [Document Assembly]
       responses:
