@@ -1000,6 +1000,7 @@ components:
           $ref: '#/components/schemas/DocumentSource'
         note:
           type: string
+          maxLength: 500
           description: A text note describing this version of the document
 
     DocumentVersion:
