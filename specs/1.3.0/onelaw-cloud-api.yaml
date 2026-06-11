@@ -1250,6 +1250,9 @@ components:
       type: object
       description: |
         A cost paid out of client trust funds that is incurred on behalf of a client during the course of a matter
+      required:
+        - expenseTypeId
+        - quantity
       properties:
         expenseTypeId:
           $ref: '#/components/schemas/ID'
@@ -1278,10 +1281,12 @@ components:
       - type: object
         description: |
           A cost paid out of client trust funds that is incurred on behalf of a client during the course of a matter
+        required:
+          - taxRateId
         properties:
           taxRateId:
             $ref: '#/components/schemas/ID'
-            description: The tax rate should default to the one that matches the expense type's taxability field, but users are free to change it.
+            description: The tax rate to apply to the expense. Must be a current GST rate that matches the expense type's taxability — an exempt expense type requires an exempt rate, otherwise a standard or zero-rated rate.
 
     Expense:
       allOf:
