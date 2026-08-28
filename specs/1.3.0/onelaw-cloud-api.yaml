@@ -2891,6 +2891,8 @@ paths:
   #
 
   /matters/{matterId}/expenses:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
     post:
       operationId: saveMatterExpense
       summary: Create a trust expense
@@ -2955,6 +2957,9 @@ paths:
           $ref: '#/components/responses/NotFound'
 
   /matters/{matterId}/expenses/{expenseId}/reversals:
+    parameters:
+      - $ref: '#/components/parameters/matterId'
+      - $ref: '#/components/parameters/expenseId'
     post:
       operationId: reverseMatterExpense
       summary: Reverse a trust expense
