@@ -40,6 +40,21 @@ None | Many parties have no roles and are essentially just a named contact - for
 Client | Parties who are clients of the law firm have this role, which grants them access to legal matters, time recording, billing, and related functions.
 User | Law firm staff members are also represented as Parties, each with a User role.
 
+## Documents & Folders
+
+Documents are managed in a structured library, owned by either a Party or a Matter. Two
+organising models coexist:
+
+Model | Description
+------|------------
+Folders | Every document sits in exactly one document folder within its party or matter. Each party and each matter has its own folder tree, anchored by an unnamed root folder; a document that hasn't been filed anywhere sits at that root.
+Categories | Free-form tags. A document can carry many categories, independent of which folder it is in.
+
+Folders are logical labels — filing or refiling a document never moves the underlying file.
+Firms choose whether their users work with folders (`foldersEnabled` on the folder-structure
+response); the structure and each document's `folderId` exist either way, but folder path
+information is only returned for firms that use folders.
+
 ## Time Entries
 
 Time entries record billable or non-billable time worked on legal matters by users.

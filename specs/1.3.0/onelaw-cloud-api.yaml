@@ -39,6 +39,8 @@ tags:
   description: Documents managed in a structured library
 - name: Document Versions
   description: Tracking document changes over time
+- name: Document Folders
+  description: The folder structure documents are organised into within a party or matter
 - name: Document Assembly
   description: InfoSheet metadata and values flattened for document assembly integrations
 - name: Search
@@ -875,9 +877,16 @@ components:
           description: A date for the document, e.g. the date an email was received.
         categories:
           type: array
-          items: 
+          items:
             type: string
           description: Optional list of categories to organize the document.
+        folderId:
+          type: string
+          format: uuid
+          description: >
+            The document folder the document is filed in. On create this is the destination
+            folder within the party or matter — omit to file the document at the party or
+            matter root. On read, a document at the root carries the root folder's id.
 
     DocumentCreate:
       allOf:
@@ -926,6 +935,22 @@ components:
               URL that can be used to download the file contents for this document.
               Clients MUST treat this URL as opaque and MUST NOT construct it
               themselves. Its value may change over time.
+          folderPathSegments:
+            type: array
+            readOnly: true
+            items:
+              $ref: '#/components/schemas/FolderPathSegment'
+            description: >
+              The document's folder chain, root to leaf. The first segment is always the
+              party or matter root, whose name is null; a document at the root has a
+              one-segment chain. Absent when the firm does not use document folders.
+          folderPath:
+            type: string
+            readOnly: true
+            description: >
+              The folder's display path, backslash-separated with a leading backslash,
+              e.g. '\Correspondence\2026'; '\' for a document at the party or matter root.
+              Absent when the firm does not use document folders.
 
     DocumentResponse:
       type: object
@@ -944,6 +969,12 @@ components:
       properties:
         source:
           $ref: '#/components/schemas/DocumentSource'
+        folderId:
+          type: string
+          format: uuid
+          description: >
+            A document folder within the document's party or matter to refile the document
+            into — omit to keep the document's current folder.
 
     DocumentRevision:
       type: object
@@ -962,6 +993,12 @@ components:
           type: string
           maxLength: 500
           description: A text note describing this version of the document
+        folderId:
+          type: string
+          format: uuid
+          description: >
+            A document folder within the document's party or matter to file the new version
+            into — omit to file it in the document's current folder.
 
     DocumentVersion:
       type: object
@@ -976,6 +1013,26 @@ components:
         note:
           type: string
           description: A text note describing this version of the document
+        folderId:
+          type: string
+          format: uuid
+          description: The document folder this version is filed in; a version at the party or matter root carries the root folder's id.
+        folderPathSegments:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/FolderPathSegment'
+          description: >
+            The version's folder chain, root to leaf. The first segment is always the
+            party or matter root, whose name is null. Absent when the firm does not use
+            document folders.
+        folderPath:
+          type: string
+          readOnly: true
+          description: >
+            The folder's display path, backslash-separated with a leading backslash;
+            '\' for the party or matter root. Absent when the firm does not use
+            document folders.
 
     DocumentVersionResponse:
       type: object
@@ -991,8 +1048,85 @@ components:
       properties:
         items:
           type: array
-          items: 
+          items:
             type: string
+
+    FolderPathSegment:
+      type: object
+      required: [ id ]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The folder's public ID.
+        name:
+          type: string
+          nullable: true
+          description: The folder name; null for the party or matter root, which has no name.
+
+    Folder:
+      type: object
+      required: [ id, name, parentId ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: The folder name, unique amongst its siblings.
+        parentId:
+          type: string
+          format: uuid
+          description: >
+            The parent folder's id. A top-level folder carries the id of the party or
+            matter root it sits under (partyRootFolderId, or a matter's rootFolderId).
+
+    PartyFoldersMatter:
+      type: object
+      required: [ id, number, rootFolderId ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        number:
+          type: integer
+          description: The matter number within the client.
+        name:
+          type: string
+        isActive:
+          type: boolean
+          description: Whether the matter is open.
+        rootFolderId:
+          type: string
+          format: uuid
+          description: The matter's root folder — documents at the matter root carry this id.
+
+    PartyFolders:
+      type: object
+      required: [ foldersEnabled, partyRootFolderId ]
+      properties:
+        foldersEnabled:
+          type: boolean
+          description: >
+            Whether the firm uses document folders. The folder structure is returned either
+            way (root folders always exist), but when false the firm's users see no folders.
+        partyRootFolderId:
+          type: string
+          format: uuid
+          description: The party's root folder — documents at the party root carry this id.
+        matters:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartyFoldersMatter'
+        folders:
+          type: array
+          items:
+            $ref: '#/components/schemas/Folder'
+          description: >
+            Every user folder in the party's structure (the party's own and all its
+            matters'), flat; rebuild the hierarchy by parentId. The party and matter roots
+            are not listed here — their ids appear as partyRootFolderId and each matter's
+            rootFolderId.
 
     SearchResponse:
       type: object
@@ -1999,6 +2133,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  #
+  # Document Folders
+  #
+
+  /parties/{partyId}/folders:
+    get:
+      operationId: getPartyFolders
+      summary: Get a party's document folder structure
+      description: |
+        Get the document folder structure for a party — the party's own folders plus the
+        folders of every matter the party owns, flat, with the root folder ids needed to
+        rebuild the hierarchy. Use this to resolve a folderId before creating a document.
+        Matters the caller cannot see are excluded.
+      tags: [Document Folders]
+      parameters:
+      - $ref: '#/components/parameters/partyId'
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyFolders'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':

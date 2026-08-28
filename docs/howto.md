@@ -46,6 +46,9 @@ Uploading a document involves four distinct steps:
 
     - The uploadId from step 1
     - Metadata such as document name, type, and description
+    - Optionally, a `folderId` naming the document folder to file the document into
+      (see [Document Folders](#document-folders)); omit it to file the document at the
+      party or matter root
 
     This final step registers the document within the OneLaw Document Management System (DMS), making it searchable, retrievable, and accessible through the relevant Matter or Party record.
 
@@ -69,6 +72,33 @@ The process for downloading documents is:
 
 Integrators should treat the `contentUrl` field as opaque and must not construct or modify download URLs.
 Always use the exact URL returned with each document. The URL may change over time, may include query parameters or signatures, and may be time-limited. The response may include HTTP redirects, which you should follow automatically.
+
+## Document Folders
+
+Documents in OneLaw are organised into folders within their party or matter — every document
+sits in exactly one folder, with the party or matter root as the default. Folders complement
+[categories](#document-uploads): a document has one folder but can carry many category tags.
+
+To file a document somewhere specific, first fetch the party's folder structure:
+
+```
+GET /parties/{partyId}/folders
+```
+
+The response contains the party's root folder id, each matter's root folder id, and the flat
+set of folders (rebuild the hierarchy with each folder's `parentId`). Pick a folder's `id`
+and pass it as `folderId` when creating the document (step 4 of the upload process), when
+creating a document version, or when saving a revision. The folder must belong to the same
+party or matter the document does. Omitting `folderId` files a new document at the party or
+matter root, and leaves an existing document's filing unchanged.
+
+Document responses describe where a document is filed: `folderId`, `folderPathSegments`
+(the root-to-leaf chain of folder ids and names — the first segment is the anonymous party
+or matter root), and `folderPath` (a display string such as `\Correspondence\2026`; `\`
+means the root). These fields are additive — integrators that do not use folders can ignore
+them. When a firm does not use document folders, `folderPathSegments` and `folderPath` are
+absent; `foldersEnabled` on the folder-structure response tells you whether the firm's users
+see folders.
 
 ## Linking Matters to Your Workspace
 
