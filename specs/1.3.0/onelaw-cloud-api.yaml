@@ -1606,6 +1606,14 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/DocumentAssemblyMetadataChoice'
+        calculated:
+          type: boolean
+          nullable: true
+          description: >
+            `true` for a field whose value is worked out by a formula on the InfoSheet
+            rather than entered. It appears in `/values` like any other field, with its
+            `dataType`; nobody fills it in, so a consumer presenting fields for entry
+            should treat it as read-only. Absent for an entered field.
 
     DocumentAssemblyMetadataInfoSheet:
       type: object
@@ -1656,6 +1664,20 @@ components:
         parentBlockKey:
           type: string
           nullable: true
+        calculated:
+          type: boolean
+          nullable: true
+          description: >
+            `true` for a calculated block — rows chosen from another block by a formula
+            (a filter, a sort, a de-duplication, a limit). Its fields are the source
+            block's, and its instances appear in `/values` exactly like a repeating
+            block's. Absent for an entered block.
+        sourceBlockKey:
+          type: string
+          nullable: true
+          description: >
+            For a calculated block, the key of the block its rows are chosen from, in
+            the same `[]` notation. Absent for an entered block.
 
     DocumentAssemblyMetadataChoice:
       type: object
@@ -2857,6 +2879,11 @@ paths:
         Returns the schema of every field a matter exposes — base `OP.*` fields plus one
         section per InfoSheet attached to the matter. Use this to enumerate every key that
         `GET /documentassemblydata/matters/{matterId}/values` could produce.
+
+        Fields and blocks worked out by a formula on the InfoSheet are listed with
+        `calculated: true`; a calculated block also names its `sourceBlockKey`. Calculation
+        sheets — formula-only InfoSheets that a document template declares rather than a
+        matter holds — are not part of this surface.
       tags: [Document Assembly]
       responses:
         '200':
